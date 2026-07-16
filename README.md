@@ -20,22 +20,26 @@ Factory Intelligence aims to replace part of that workflow with a structured API
 
 ## Current status
 
-This repository currently contains the initial project structure and local infrastructure setup.
-The foundation is in place, but several core product features are still planned or partially implemented.
+This repository currently contains the initial FastAPI project structure, local Docker infrastructure,
+and the first SQLAlchemy domain models. The foundation is in place, but several core product features
+are still planned or partially implemented.
 
 ### Implemented or scaffolded
 - FastAPI project structure under the app package
 - Containerized local development setup with Docker Compose
 - PostgreSQL and LocalStack services for local development
 - Environment configuration examples
-- Basic repository layout and CI workflow
+- Basic API router structure with lab and production health checks
+- Initial SQLAlchemy models for production sheets, lab tests, production lines, shifts, resin types, and panel types
 
 ### Not yet fully implemented
+- Alembic migrations for database schema management
+- Pydantic request and response schemas
+- CRUD endpoints for lab and production data
 - CSV ingestion and parsing workflows
 - Lab quality analysis endpoints
 - Production OEE and stoppage analysis endpoints
 - Async report generation and PDF delivery
-- Database models and migrations beyond the initial scaffold
 - Full test coverage for business logic
 
 ---
@@ -46,8 +50,10 @@ The foundation is in place, but several core product features are still planned 
 - Finalize the core app entry points and router structure
 - Define the initial data models and schemas
 - Connect the API to local PostgreSQL and LocalStack services
+- Add Alembic migrations for the database schema
 
 ### Phase 2 — ingestion and validation
+- Build basic CRUD endpoints for lab and production records
 - Build CSV upload handlers for lab and production datasets
 - Add validation rules for required columns and expected formats
 - Introduce domain detection based on CSV headers
@@ -83,6 +89,43 @@ is intended to use services such as S3, SQS, RDS, ECS, Lambda, EventBridge and T
 
 ---
 
+## Domain model overview
+
+The current model layer is centered around two operational records:
+
+- Production sheets capture manufacturing parameters such as line, shift, batch, panel dimensions,
+  resin usage, downtime, panels produced, panels rejected, and calculated rejection rate.
+- Lab tests capture quality measurements for produced panels, including density, moisture, internal bond,
+  bending strength, elastic modulus, swelling, water absorption, and formaldehyde metrics.
+
+Shared reference models currently include:
+
+- Production lines
+- Shifts
+- Resin types
+- Panel types
+
+Production and lab records are connected through shared concepts such as production line, shift, batch,
+panel type, and panel thickness. A future `Batch` model may become useful if batch-level traceability
+needs to become a first-class part of the application.
+
+---
+
+## Current learning path
+
+The next logical development steps after defining the models are:
+
+1. Add Alembic and create the first database migration
+2. Define Pydantic schemas for input and output validation
+3. Build simple CRUD endpoints for production sheets and lab tests
+4. Add tests for models, database relationships, and basic API behavior
+5. Define expected CSV formats and validation rules
+6. Build CSV ingestion workflows
+7. Add analytics services for quality and production metrics
+8. Add report generation and asynchronous delivery workflows
+
+---
+
 ## Project structure
 
 ```
@@ -94,9 +137,6 @@ factory-intelligence/
 │   ├── reports/
 │   ├── schemas/
 │   └── services/
-├── infra/
-│   ├── environments/
-│   └── modules/
 ├── scripts/
 ├── tests/
 ├── docker-compose.yml
@@ -132,7 +172,7 @@ Expected local services:
 - API: FastAPI, Python
 - Database: PostgreSQL, SQLAlchemy
 - Validation: Pydantic, pydantic-settings
-- Infrastructure: Docker Compose, Terraform, AWS services
+- Infrastructure: Docker Compose, AWS-oriented local development with LocalStack
 - Reporting: ReportLab
 - Local emulation: LocalStack
 
