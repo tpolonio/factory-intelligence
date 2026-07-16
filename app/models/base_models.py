@@ -1,10 +1,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
-from sqlalchemy import Integer, String, ForeignKey, DateTime, Float
-from datetime import datetime
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from enum import Enum as PyEnum
 from typing import List
 from app.core.database import Base
 
@@ -24,3 +22,16 @@ class Shift(Base):
     press_operator: Mapped[str] = mapped_column(String(50))
     line_operator: Mapped[str] = mapped_column(String(50))
     lab_tests: Mapped [List["LabTest"]] = relationship("LabTest", back_populates="shift")
+
+class ResinType(Base):
+    __tablename__ = "resin_types"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(50), unique=True)
+
+class PanelType(str, PyEnum):
+    MDF = "MDF"
+    PB = "Particleboard"
+    OSB = "OSB"
+    HDF = "HDF"
+    HID = "MDF Hydro"
+    IGN = "MDF Igni"
