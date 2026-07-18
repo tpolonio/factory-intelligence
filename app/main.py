@@ -1,9 +1,5 @@
 from fastapi import FastAPI
 from app.api.v1.router import router
-from app.core.database import engine, Base
-
-
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Factory Intelligence API",
