@@ -31,9 +31,11 @@ are still planned or partially implemented.
 - Environment configuration examples
 - Basic API router structure with lab and production health checks
 - Initial SQLAlchemy models for production sheets, lab tests, production lines, shifts, resin types, and panel types
+- Alembic migrations for database schema management
+- Pydantic request and response schemas for production line
+- CRUD endpoints for production line
 
 ### Not yet fully implemented
-- Alembic migrations for database schema management
 - Pydantic request and response schemas
 - CRUD endpoints for lab and production data
 - CSV ingestion and parsing workflows

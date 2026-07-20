@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.api.v1.router import router
+import app.models
 
 app = FastAPI(
     title="Factory Intelligence API",
