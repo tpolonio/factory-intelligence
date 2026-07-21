@@ -21,8 +21,8 @@ Factory Intelligence aims to replace part of that workflow with a structured API
 ## Current status
 
 This repository currently contains the initial FastAPI project structure, local Docker infrastructure,
-and the first SQLAlchemy domain models. The foundation is in place, but several core product features
-are still planned or partially implemented.
+the first SQLAlchemy domain models, Alembic migrations, and an initial production-line API flow.
+The foundation is in place, but several core product features are still planned or partially implemented.
 
 ### Implemented or scaffolded
 - FastAPI project structure under the app package
@@ -31,13 +31,15 @@ are still planned or partially implemented.
 - Environment configuration examples
 - Basic API router structure with lab and production health checks
 - Initial SQLAlchemy models for production sheets, lab tests, production lines, shifts, resin types, and panel types
-- Alembic migrations for database schema management
-- Pydantic request and response schemas for production line
-- CRUD endpoints for production line
+- Alembic database migration setup with an initial schema migration
+- Pydantic request and response schemas for reference models
+- Production-line API endpoints for create, list, filter by name, and get by id
+- Production-line service layer for database and business logic
 
 ### Not yet fully implemented
-- Pydantic request and response schemas
-- CRUD endpoints for lab and production data
+- CRUD endpoints for remaining reference data such as resin types and shifts
+- Pydantic request and response schemas for production sheets and lab tests
+- CRUD endpoints for production sheets and lab tests
 - CSV ingestion and parsing workflows
 - Lab quality analysis endpoints
 - Production OEE and stoppage analysis endpoints
@@ -115,16 +117,25 @@ needs to become a first-class part of the application.
 
 ## Current learning path
 
-The next logical development steps after defining the models are:
+Completed foundation steps:
 
-1. Add Alembic and create the first database migration
-2. Define Pydantic schemas for input and output validation
-3. Build simple CRUD endpoints for production sheets and lab tests
-4. Add tests for models, database relationships, and basic API behavior
-5. Define expected CSV formats and validation rules
-6. Build CSV ingestion workflows
-7. Add analytics services for quality and production metrics
-8. Add report generation and asynchronous delivery workflows
+1. Define SQLAlchemy models
+2. Add Alembic and create the first database migration
+3. Define initial Pydantic schemas for reference data
+4. Build the first production-line API flow
+5. Extract production-line database logic into a service layer
+
+Next learning steps:
+
+1. Repeat the same schema, route, and service pattern for resin types
+2. Repeat the pattern for shifts
+3. Add tests for production-line behavior
+4. Define Pydantic schemas for production sheets and lab tests
+5. Build simple CRUD endpoints for production sheets and lab tests
+6. Define expected CSV formats and validation rules
+7. Build CSV ingestion workflows
+8. Add analytics services for quality and production metrics
+9. Add report generation and asynchronous delivery workflows
 
 ---
 
@@ -139,8 +150,10 @@ factory-intelligence/
 │   ├── reports/
 │   ├── schemas/
 │   └── services/
+├── alembic/
 ├── scripts/
 ├── tests/
+├── alembic.ini
 ├── docker-compose.yml
 ├── Dockerfile
 ├── requirements.txt
