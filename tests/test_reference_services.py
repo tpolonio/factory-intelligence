@@ -29,6 +29,8 @@ def setup_function():
     Base.metadata.create_all(bind=engine)
 
 
+#Production Line tests
+
 def test_create_production_line_normalizes_name():
     db = TestingSessionLocal()
     try:
@@ -75,6 +77,19 @@ def test_list_production_lines_can_filter_by_name():
     finally:
         db.close()
 
+def test_missing_production_line_returns_not_found():
+    db = TestingSessionLocal()
+    try:
+        with pytest.raises(HTTPException) as exc_info:
+            production_lines.get_production_line(line_id=999, db=db)
+
+        assert exc_info.value.status_code == 404
+    finally:
+        db.close()
+
+
+#Resin Type tests
+
 
 def test_create_resin_type_preserves_capitalization():
     db = TestingSessionLocal()
@@ -98,6 +113,8 @@ def test_duplicate_resin_type_is_case_insensitive():
     finally:
         db.close()
 
+
+#Resin Type tests
 
 def test_create_shift_normalizes_letter_and_operator_names():
     db = TestingSessionLocal()
