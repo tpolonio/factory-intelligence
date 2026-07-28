@@ -8,11 +8,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-import app.models
 from app.core.database import Base
 from app.schemas.base_models import ProductionLineCreate, ResinTypeCreate, ShiftCreate
 from app.services import production_lines, resin_types, shifts
-
 
 SQLALCHEMY_DATABASE_URL = "sqlite://"
 
@@ -29,7 +27,8 @@ def setup_function():
     Base.metadata.create_all(bind=engine)
 
 
-#Production Line tests
+# Production Line tests
+
 
 def test_create_production_line_normalizes_name():
     db = TestingSessionLocal()
@@ -77,6 +76,7 @@ def test_list_production_lines_can_filter_by_name():
     finally:
         db.close()
 
+
 def test_missing_production_line_returns_not_found():
     db = TestingSessionLocal()
     try:
@@ -88,7 +88,7 @@ def test_missing_production_line_returns_not_found():
         db.close()
 
 
-#Resin Type tests
+# Resin Type tests
 
 
 def test_create_resin_type_preserves_capitalization():
@@ -114,7 +114,8 @@ def test_duplicate_resin_type_is_case_insensitive():
         db.close()
 
 
-#Resin Type tests
+# Resin Type tests
+
 
 def test_create_shift_normalizes_letter_and_operator_names():
     db = TestingSessionLocal()

@@ -36,12 +36,12 @@ planned or partially implemented.
 - Pydantic request and response schemas for reference models
 - Reference-data API endpoints for production lines, resin types, and shifts
 - Service layer for reference-data database and business logic
-- Initial API and architecture documentation under `docs/`
 - Initial pytest coverage for reference-data services
+- Pydantic request and response schemas for production sheets and lab tests
 
 ### Not yet fully implemented
-- Pydantic request and response schemas for production sheets and lab tests
 - CRUD endpoints for production sheets and lab tests
+- Initial API and architecture documentation under `docs/`
 - CSV ingestion and parsing workflows
 - Lab quality analysis endpoints
 - Production OEE and stoppage analysis endpoints

@@ -1,16 +1,13 @@
 from fastapi import HTTPException, status
-from app.models.base_models import ResinType
-from app.schemas.base_models import ResinTypeCreate
-from sqlalchemy.orm import Session
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from app.models.base_models import ResinType
+from app.schemas.base_models import ResinTypeCreate
 
 
-
-def create_resin_type(
-        resin_type_input: ResinTypeCreate, 
-        db: Session
-        ) -> ResinType:
+def create_resin_type(resin_type_input: ResinTypeCreate, db: Session) -> ResinType:
 
     resin_type_name = clean_resin_type_name(resin_type_input.name)
 
@@ -18,14 +15,14 @@ def create_resin_type(
 
     new_resin_type = ResinType(name=resin_type_name)
 
-    try: 
+    try:
         db.add(new_resin_type)
         db.commit()
     except IntegrityError:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Resin Type with that name already exists."
+            detail="Resin Type with that name already exists.",
         )
     db.refresh(new_resin_type)
 
@@ -33,11 +30,11 @@ def create_resin_type(
 
 
 def list_resin_types(
-        name: str | None, 
-        db: Session,
-        limit: int,
-        offset: int,
-    ) -> list[ResinType]:
+    name: str | None,
+    db: Session,
+    limit: int,
+    offset: int,
+) -> list[ResinType]:
 
     statement = select(ResinType)
     if name:
@@ -53,10 +50,11 @@ def get_resin_type(resin_type_id: int, db: Session) -> ResinType:
     resin_type = db.get(ResinType, resin_type_id)
     if not resin_type:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, 
-            detail="Resin Type not found.")
+            status_code=status.HTTP_404_NOT_FOUND, detail="Resin Type not found."
+        )
 
     return resin_type
+
 
 def ensure_unique_resin_type_name(resin_type_name: str, db: Session):
 
@@ -66,9 +64,8 @@ def ensure_unique_resin_type_name(resin_type_name: str, db: Session):
     if existing_resin_type:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Resin Type with that name already exists."
+            detail="Resin Type with that name already exists.",
         )
-    return 
 
 
 def clean_resin_type_name(resin_type_name: str):

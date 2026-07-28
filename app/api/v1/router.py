@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from app.api.v1 import lab, production
 
+from app.api.v1 import lab, production
 
 router = APIRouter()
 

@@ -17,8 +17,12 @@ class Settings(BaseSettings):
     aws_secret_access_key: str = Field(default="test", alias="AWS_SECRET_ACCESS_KEY")
     aws_default_region: str = Field(default="eu-west-1", alias="AWS_DEFAULT_REGION")
 
-    sqs_queue_name: str = Field(default="factory-intelligence-reports-queue", alias="SQS_QUEUE_NAME")
-    s3_bucket_name: str = Field(default="factory-intelligence-reports-bucket", alias="S3_BUCKET_NAME")
+    sqs_queue_name: str = Field(
+        default="factory-intelligence-reports-queue", alias="SQS_QUEUE_NAME"
+    )
+    s3_bucket_name: str = Field(
+        default="factory-intelligence-reports-bucket", alias="S3_BUCKET_NAME"
+    )
 
     @field_validator("app_environment")
     @classmethod
@@ -31,7 +35,9 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def validate_database_url(cls, value: str) -> str:
-        if not value.startswith(("postgresql://", "postgresql+psycopg2://", "postgresql+asyncpg://")):
+        if not value.startswith(
+            ("postgresql://", "postgresql+psycopg2://", "postgresql+asyncpg://")
+        ):
             raise ValueError("database_url must be a PostgreSQL connection string")
         return value
 
