@@ -14,7 +14,7 @@ def create_production_sheet(
 
     ensure_unique_production_ref(production_sheet_input.production_ref, db)
     ensure_production_line_exists(production_sheet_input.production_line_id, db)
-    ensure_valid_unique_shift_letter(production_sheet_input.shift_id, db)
+    ensure_shift_exists(production_sheet_input.shift_id, db)
     ensure_resin_exists(production_sheet_input.resin_type_id, db)
 
     new_production_sheet = ProductionSheet
@@ -48,9 +48,7 @@ def ensure_unique_production_ref(production_ref: int, db: Session):
 
 def ensure_production_line_exists(production_line_id: int, db: Session):
 
-    statement = select(ProductionLine).where(
-        production_line_id == ProductionLine.production_line_id
-    )
+    statement = select(ProductionLine).where(production_line_id == ProductionLine.id)
     existing_production_line = db.scalars(statement).first()
     if not existing_production_line:
         raise HTTPException(
@@ -59,9 +57,9 @@ def ensure_production_line_exists(production_line_id: int, db: Session):
         )
 
 
-def ensure_valid_unique_shift_letter(shift_id: int, db: Session):
+def ensure_shift_exists(shift_id: int, db: Session):
 
-    statement = select(Shift).where(shift_id == Shift.shift_id)
+    statement = select(Shift).where(shift_id == Shift.id)
     existing_shift = db.scalars(statement).first()
     if not existing_shift:
         raise HTTPException(
@@ -71,7 +69,7 @@ def ensure_valid_unique_shift_letter(shift_id: int, db: Session):
 
 
 def ensure_resin_exists(resin_type_id: int, db: Session):
-    statement = select(ResinType).where(resin_type_id == ResinType.resin_type_id)
+    statement = select(ResinType).where(resin_type_id == ResinType.id)
 
     existing_resin_type = db.scalars(statement).first()
 
