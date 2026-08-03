@@ -15,9 +15,9 @@ def create_production_sheet(
     ensure_unique_production_ref(production_sheet_input.production_ref, db)
     ensure_production_line_exists(production_sheet_input.production_line_id, db)
     ensure_shift_exists(production_sheet_input.shift_id, db)
-    ensure_resin_exists(production_sheet_input.resin_type_id, db)
+    ensure_resin_type_exists(production_sheet_input.resin_type_id, db)
 
-    new_production_sheet = ProductionSheet
+    new_production_sheet = ProductionSheet(**production_sheet_input.model_dump())
 
     try:
         db.add(new_production_sheet)
@@ -26,7 +26,7 @@ def create_production_sheet(
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Production sheet with that name already exists.",
+            detail="Production sheet with that production reference already exists.",
         )
     db.refresh(new_production_sheet)
 
@@ -68,7 +68,7 @@ def ensure_shift_exists(shift_id: int, db: Session):
         )
 
 
-def ensure_resin_exists(resin_type_id: int, db: Session):
+def ensure_resin_type_exists(resin_type_id: int, db: Session):
     statement = select(ResinType).where(resin_type_id == ResinType.id)
 
     existing_resin_type = db.scalars(statement).first()

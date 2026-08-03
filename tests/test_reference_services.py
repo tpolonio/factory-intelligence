@@ -123,14 +123,14 @@ def test_create_shift_normalizes_letter_and_operator_names():
         shift = shifts.create_shift(
             ShiftCreate(
                 shift_letter=" a ",
-                press_operator=" Jane Smith ",
+                press_operator=" Joao Fernandes ",
                 line_operator=" Luis Costa ",
             ),
             db,
         )
 
         assert shift.shift_letter == "A"
-        assert shift.press_operator == "Jane Smith"
+        assert shift.press_operator == "Joao Fernandes"
         assert shift.line_operator == "Luis Costa"
     finally:
         db.close()
