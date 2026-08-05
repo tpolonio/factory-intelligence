@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 import app.services.production_lines as production_line_service
+import app.services.production_sheets as production_sheet_service
 import app.services.resin_types as resin_type_service
 import app.services.shifts as shift_service
 from app.core.database import get_db
@@ -15,6 +16,7 @@ from app.schemas.base_models import (
     ShiftCreate,
     ShiftRead,
 )
+from app.schemas.production import ProductionSheetCreate, ProductionSheetRead
 
 router = APIRouter()
 
@@ -139,3 +141,23 @@ def show_shift(shift_id: int, db: Annotated[Session, Depends(get_db)]):
 
     shift = shift_service.get_shift(shift_id=shift_id, db=db)
     return shift
+
+
+# ---------------------------------Production Sheets--------------------------------------#
+
+
+@router.post(
+    "/production-sheets",
+    response_model=ProductionSheetRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_new_production_sheet(
+    production_sheet_input: ProductionSheetCreate,
+    db: Annotated[Session, Depends(get_db)],
+):
+
+    new_production_sheet = production_sheet_service.create_production_sheet(
+        production_sheet_input, db
+    )
+
+    return new_production_sheet
