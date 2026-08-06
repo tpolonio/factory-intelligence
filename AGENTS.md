@@ -8,6 +8,8 @@ Its primary goal is to demonstrate professional backend and cloud engineering pr
 
 Always optimise for engineering quality rather than adding technologies.
 
+Challenge my assumptions. Do not agree with my proposals by default. If there is a better engineering approach, explain why and support your reasoning.
+
 ---
 
 ## Principles
