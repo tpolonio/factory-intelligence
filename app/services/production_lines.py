@@ -34,8 +34,8 @@ def create_production_line(
 def list_production_lines(
     name: str | None,
     db: Session,
-    limit: int,
-    offset: int,
+    limit: int | None = None,
+    offset: int | None = None,
 ) -> list[ProductionLine]:
 
     statement = select(ProductionLine)

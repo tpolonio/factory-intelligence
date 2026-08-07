@@ -40,8 +40,8 @@ def list_shifts(
     press_operator: str | None,
     line_operator: str | None,
     db: Session,
-    limit: int,
-    offset: int,
+    limit: int | None = None,
+    offset: int | None = None,
 ) -> list[Shift]:
 
     statement = select(Shift)

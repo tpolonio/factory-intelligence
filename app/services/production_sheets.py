@@ -36,17 +36,17 @@ def create_production_sheet(
 
 
 def list_production_sheets(
-    production_line_id: int | None,
-    shift_id: int | None,
-    resin_type_id: int | None,
-    production_ref: int | None,
-    batch_id: int | None,
-    panel_type: PanelType | None,
-    production_date_from: datetime | None,
-    production_date_to: datetime | None,
     db: Session,
-    limit: int,
-    offset: int,
+    limit: int | None = None,
+    offset: int | None = None,
+    production_line_id: int | None = None,
+    shift_id: int | None = None,
+    resin_type_id: int | None = None,
+    production_ref: int | None = None,
+    batch_id: int | None = None,
+    panel_type: PanelType | None = None,
+    production_date_from: datetime | None = None,
+    production_date_to: datetime | None = None,
 ):
     statement = select(ProductionSheet)
     if production_line_id is not None:
@@ -79,7 +79,12 @@ def list_production_sheets(
             ProductionSheet.production_date <= production_date_to
         )
 
-    statement = statement.offset(offset).limit(limit)
+    if offset is not None:
+        statement = statement.offset(offset)
+
+    if limit is not None:
+        statement = statement.limit(limit)
+
     return db.scalars(statement).all()
 
 

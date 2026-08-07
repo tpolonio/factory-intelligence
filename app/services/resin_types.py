@@ -32,8 +32,8 @@ def create_resin_type(resin_type_input: ResinTypeCreate, db: Session) -> ResinTy
 def list_resin_types(
     name: str | None,
     db: Session,
-    limit: int,
-    offset: int,
+    limit: int | None = None,
+    offset: int | None = None,
 ) -> list[ResinType]:
 
     statement = select(ResinType)

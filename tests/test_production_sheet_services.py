@@ -11,6 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.database import Base
+from app.models.base_models import PanelType
 from app.schemas.base_models import ProductionLineCreate, ResinTypeCreate, ShiftCreate
 from app.schemas.production import ProductionSheetCreate
 from app.services import production_lines, production_sheets, resin_types, shifts
@@ -81,13 +82,17 @@ def build_production_sheet_payload(**overrides):
     return ProductionSheetCreate(**data)
 
 
+def create_services(db):
+    create_production_line(db)
+    create_resin_type(db)
+    create_shift(db)
+
+
 def test_create_production_sheet_with_valid_reference_ids():
     db = TestingSessionLocal()
 
     try:
-        create_production_line(db)
-        create_resin_type(db)
-        create_shift(db)
+        create_services(db)
         new_production_sheet = production_sheets.create_production_sheet(
             build_production_sheet_payload(),
             db,
@@ -124,9 +129,7 @@ def test_create_production_sheet_with_valid_reference_ids():
 def test_duplicate_production_ref_returns_conflict():
     db = TestingSessionLocal()
     try:
-        create_production_line(db)
-        create_resin_type(db)
-        create_shift(db)
+        create_services(db)
         production_sheets.create_production_sheet(build_production_sheet_payload(), db)
 
         with pytest.raises(HTTPException) as exc_info:
@@ -186,5 +189,142 @@ def test_missing_resin_type_returns_not_found():
             )
 
         assert exc_info.value.status_code == 404
+    finally:
+        db.close()
+
+
+def test_list_production_sheets_returns_created_sheets():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+
+        new_production_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(),
+            db,
+        )
+
+        production_sheets_list = production_sheets.list_production_sheets(db)
+        assert len(production_sheets_list) == 1
+        assert (
+            production_sheets_list[0].production_ref
+            == new_production_sheet.production_ref
+        )
+
+    finally:
+        db.close()
+
+
+def test_list_production_sheets_can_filter_by_panel_type():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+
+        new_production_sheet_1 = production_sheets.create_production_sheet(
+            build_production_sheet_payload(),
+            db,
+        )
+
+        new_production_sheet_2 = production_sheets.create_production_sheet(
+            build_production_sheet_payload(production_ref=2, panel_type=PanelType.OSB),
+            db,
+        )
+
+        production_sheets_list = production_sheets.list_production_sheets(
+            panel_type=PanelType.MDF, db=db
+        )
+        assert len(production_sheets_list) == 1
+        assert new_production_sheet_1.panel_type == "MDF"
+        assert new_production_sheet_2.panel_type == "OSB"
+        assert production_sheets_list[0].panel_type == "MDF"
+
+    finally:
+        db.close()
+
+
+def test_list_production_sheets_can_filter_by_production_ref():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+
+        new_production_sheet_1 = production_sheets.create_production_sheet(
+            build_production_sheet_payload(),
+            db,
+        )
+
+        new_production_sheet_2 = production_sheets.create_production_sheet(
+            build_production_sheet_payload(production_ref=2),
+            db,
+        )
+
+        production_sheets_list = production_sheets.list_production_sheets(
+            production_ref=1, db=db
+        )
+        assert len(production_sheets_list) == 1
+        assert new_production_sheet_1.production_ref == 1
+        assert new_production_sheet_2.production_ref == 2
+        assert production_sheets_list[0].production_ref == 1
+
+    finally:
+        db.close()
+
+
+def test_list_production_sheets_can_filter_by_production_line_id():
+
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+
+        production_lines.create_production_line(
+            ProductionLineCreate(name="OSB Line"),
+            db,
+        )
+
+        new_production_sheet_1 = production_sheets.create_production_sheet(
+            build_production_sheet_payload(),
+            db,
+        )
+
+        new_production_sheet_2 = production_sheets.create_production_sheet(
+            build_production_sheet_payload(production_ref=2, production_line_id=2),
+            db,
+        )
+
+        production_sheets_list = production_sheets.list_production_sheets(
+            production_line_id=1,
+            db=db,
+        )
+        assert len(production_sheets_list) == 1
+        assert new_production_sheet_1.production_line_id == 1
+        assert new_production_sheet_2.production_line_id == 2
+        assert production_sheets_list[0].production_line_id == 1
+
+    finally:
+        db.close()
+
+
+def test_list_production_sheets_applies_limit():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        production_sheets.create_production_sheet(
+            build_production_sheet_payload(),
+            db,
+        )
+
+        production_sheets.create_production_sheet(
+            build_production_sheet_payload(production_ref=2),
+            db,
+        )
+
+        production_sheets_list = production_sheets.list_production_sheets(
+            limit=1, db=db
+        )
+        assert len(production_sheets_list) == 1
+
     finally:
         db.close()
