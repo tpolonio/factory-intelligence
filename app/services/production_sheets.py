@@ -1,9 +1,11 @@
+from datetime import datetime
+
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.models.base_models import ProductionLine, ResinType, Shift
+from app.models.base_models import PanelType, ProductionLine, ResinType, Shift
 from app.models.production import ProductionSheet
 from app.schemas.production import ProductionSheetCreate
 
@@ -31,6 +33,54 @@ def create_production_sheet(
     db.refresh(new_production_sheet)
 
     return new_production_sheet
+
+
+def list_production_sheets(
+    production_line_id: int | None,
+    shift_id: int | None,
+    resin_type_id: int | None,
+    production_ref: int | None,
+    batch_id: int | None,
+    panel_type: PanelType | None,
+    production_date_from: datetime | None,
+    production_date_to: datetime | None,
+    db: Session,
+    limit: int,
+    offset: int,
+):
+    statement = select(ProductionSheet)
+    if production_line_id is not None:
+        statement = statement.where(
+            ProductionSheet.production_line_id == production_line_id
+        )
+
+    if shift_id is not None:
+        statement = statement.where(ProductionSheet.shift_id == shift_id)
+
+    if resin_type_id is not None:
+        statement = statement.where(ProductionSheet.resin_type_id == resin_type_id)
+
+    if production_ref is not None:
+        statement = statement.where(ProductionSheet.production_ref == production_ref)
+
+    if batch_id is not None:
+        statement = statement.where(ProductionSheet.batch_id == batch_id)
+
+    if panel_type is not None:
+        statement = statement.where(ProductionSheet.panel_type == panel_type)
+
+    if production_date_from is not None:
+        statement = statement.where(
+            ProductionSheet.production_date >= production_date_from
+        )
+
+    if production_date_to is not None:
+        statement = statement.where(
+            ProductionSheet.production_date <= production_date_to
+        )
+
+    statement = statement.offset(offset).limit(limit)
+    return db.scalars(statement).all()
 
 
 def ensure_unique_production_ref(production_ref: int, db: Session):

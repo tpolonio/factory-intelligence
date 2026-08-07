@@ -177,10 +177,11 @@ Common responses:
 Production sheets capture the manufacturing record for a panel production run. A production sheet
 requires an existing production line, shift, and resin type.
 
-Endpoint:
+Endpoints:
 
 ```text
 POST /api/v1/production/production-sheets
+GET  /api/v1/production/production-sheets
 ```
 
 Create request:
@@ -243,6 +244,62 @@ Create response:
   "created_at": "2026-08-05T00:07:39.528467Z",
   "updated_at": "2026-08-05T00:07:39.528467Z"
 }
+```
+
+List query parameters:
+
+```text
+production_line_id: optional positive integer filter
+shift_id: optional positive integer filter
+resin_type_id: optional positive integer filter
+production_ref: optional positive integer filter
+batch_id: optional positive integer filter
+panel_type: optional panel type filter, for example MDF
+production_date_from: optional inclusive datetime lower bound
+production_date_to: optional inclusive datetime upper bound
+limit: default 20, minimum 1, maximum 100
+offset: default 0, minimum 0
+```
+
+Example list request:
+
+```text
+GET /api/v1/production/production-sheets?production_line_id=1&panel_type=MDF&limit=20&offset=0
+```
+
+List response:
+
+```json
+[
+  {
+    "id": 1,
+    "production_ref": 20260805,
+    "production_date": "2026-08-05T10:00:00Z",
+    "production_line_id": 1,
+    "batch_id": 1,
+    "shift_id": 1,
+    "panel_type": "MDF",
+    "panel_length": "4880.00",
+    "panel_width": "1200.00",
+    "panel_thickness": "18.00",
+    "forming_line_speed": 10.5,
+    "press_temperature": 180.0,
+    "press_pressure": 150.0,
+    "press_factor": 0.8,
+    "resin_type_id": 1,
+    "production_duration": 150.5,
+    "total_downtime": 20.4,
+    "resin_dosed": "12.00",
+    "paraffin_dosed": "4.00",
+    "urea_dosed": "0.50",
+    "percentage_recycled_material": 12.0,
+    "panels_produced": 123,
+    "panels_rejected": 8,
+    "rejection_rate": 6.504065040650407,
+    "created_at": "2026-08-05T00:07:39.528467Z",
+    "updated_at": "2026-08-05T00:07:39.528467Z"
+  }
+]
 ```
 
 Validation notes:

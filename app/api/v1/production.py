@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
@@ -8,6 +9,7 @@ import app.services.production_sheets as production_sheet_service
 import app.services.resin_types as resin_type_service
 import app.services.shifts as shift_service
 from app.core.database import get_db
+from app.models.base_models import PanelType
 from app.schemas.base_models import (
     ProductionLineCreate,
     ProductionLineRead,
@@ -24,6 +26,60 @@ router = APIRouter()
 @router.get("/health")
 def production_health_check():
     return {"domain": "production", "status": "healthy"}
+
+
+# ---------------------------------Production Sheets--------------------------------------#
+
+
+@router.post(
+    "/production-sheets",
+    response_model=ProductionSheetRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_new_production_sheet(
+    production_sheet_input: ProductionSheetCreate,
+    db: Annotated[Session, Depends(get_db)],
+):
+
+    new_production_sheet = production_sheet_service.create_production_sheet(
+        production_sheet_input, db
+    )
+
+    return new_production_sheet
+
+
+@router.get(
+    "/production-sheets",
+    response_model=list[ProductionSheetRead],
+    status_code=status.HTTP_200_OK,
+)
+def list_production_sheets(
+    db: Annotated[Session, Depends(get_db)],
+    production_line_id: int | None = Query(default=None, gt=0),
+    shift_id: int | None = Query(default=None, gt=0),
+    resin_type_id: int | None = Query(default=None, gt=0),
+    production_ref: int | None = Query(default=None, gt=0),
+    batch_id: int | None = Query(default=None, gt=0),
+    panel_type: PanelType | None = None,
+    production_date_from: datetime | None = None,
+    production_date_to: datetime | None = None,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+):
+    production_sheet_retrieved = production_sheet_service.list_production_sheets(
+        production_line_id=production_line_id,
+        shift_id=shift_id,
+        resin_type_id=resin_type_id,
+        production_ref=production_ref,
+        batch_id=batch_id,
+        panel_type=panel_type,
+        production_date_from=production_date_from,
+        production_date_to=production_date_to,
+        db=db,
+        limit=limit,
+        offset=offset,
+    )
+    return production_sheet_retrieved
 
 
 # ---------------------------------Production Lines--------------------------------------#
@@ -141,23 +197,3 @@ def show_shift(shift_id: int, db: Annotated[Session, Depends(get_db)]):
 
     shift = shift_service.get_shift(shift_id=shift_id, db=db)
     return shift
-
-
-# ---------------------------------Production Sheets--------------------------------------#
-
-
-@router.post(
-    "/production-sheets",
-    response_model=ProductionSheetRead,
-    status_code=status.HTTP_201_CREATED,
-)
-def add_new_production_sheet(
-    production_sheet_input: ProductionSheetCreate,
-    db: Annotated[Session, Depends(get_db)],
-):
-
-    new_production_sheet = production_sheet_service.create_production_sheet(
-        production_sheet_input, db
-    )
-
-    return new_production_sheet

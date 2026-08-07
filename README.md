@@ -18,38 +18,34 @@ Factory Intelligence aims to replace part of that workflow with a structured API
 
 ---
 
-## Current status
+## Current Capabilities
 
 Factory Intelligence is in the foundation phase. The project currently supports reference-data
-management for production lines, resin types, and shifts, plus the first production sheet creation
-workflow.
+management for production lines, resin types, and shifts, plus production sheet creation and
+query workflows.
 
-### Implemented So Far
-- FastAPI project structure under the app package
-- Containerized local development setup with Docker Compose
-- PostgreSQL and LocalStack services for local development
-- Environment configuration examples
-- Basic API router structure with lab and production health checks
-- Initial SQLAlchemy models for production sheets, lab tests, production lines, shifts, resin types, and panel types
+Implemented:
+
+- FastAPI application structure with versioned API routing
+- Docker Compose local development setup with PostgreSQL and LocalStack
+- SQLAlchemy models for production sheets, lab tests, production lines, shifts, resin types, and panel types
 - Alembic database migration setup with an initial schema migration
-- Pydantic request and response schemas for reference models
-- Reference-data API endpoints for production lines, resin types, and shifts
-- Service layer for reference-data database and business logic
-- Initial pytest coverage for reference-data services
-- Pydantic request and response schemas for production sheets
-- Production sheet creation endpoint with reference-record validation
-- Initial pytest coverage for production sheet creation
+- Pydantic request and response schemas for implemented workflows
+- Reference-data endpoints for production lines, resin types, and shifts
+- Production sheet creation with reference-record validation
+- Production sheet listing with operational filters and pagination
+- Service-layer business logic for implemented production workflows
+- Pytest coverage for reference-data services and production sheet creation
 
-### Not yet fully implemented
-- List, detail, update, and delete endpoints for production sheets
-- Pydantic request and response schemas for lab tests
-- CRUD endpoints for lab tests
-- Architecture documentation under `docs/`
+Not yet implemented:
+
+- Production sheet detail, update, and delete workflows
+- Lab test schemas and endpoints
 - CSV ingestion and parsing workflows
 - Lab quality analysis endpoints
 - Production OEE and stoppage analysis endpoints
 - Async report generation and PDF delivery
-- Full test coverage for business logic
+- Deployment infrastructure beyond local development
 
 ---
 
@@ -117,30 +113,6 @@ Shared reference models currently include:
 Production and lab records are connected through shared concepts such as production line, shift, batch,
 panel type, and panel thickness. A future `Batch` model may become useful if batch-level traceability
 needs to become a first-class part of the application.
-
----
-
-## Current learning path
-
-Completed foundation steps:
-
-1. Define SQLAlchemy models
-2. Add Alembic and create the first database migration
-3. Define initial Pydantic schemas for reference data
-4. Build reference-data API flows for production lines, resin types, and shifts
-5. Extract reference-data database logic into service modules
-6. Add production sheet create schema, service, endpoint, and service tests
-
-Next learning steps:
-
-1. Add API-level coverage for the production sheet create endpoint
-2. Add production sheet read/list workflows when the create flow is stable
-3. Define Pydantic schemas for lab tests
-4. Build simple CRUD endpoints for lab tests
-5. Define expected CSV formats and validation rules
-6. Build CSV ingestion workflows
-7. Add analytics services for quality and production metrics
-8. Add report generation and asynchronous delivery workflows
 
 ---
 
