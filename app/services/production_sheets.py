@@ -88,6 +88,17 @@ def list_production_sheets(
     return db.scalars(statement).all()
 
 
+def get_production_sheet(production_sheet_id: int, db: Session) -> ProductionSheet:
+
+    production_sheet = db.get(ProductionSheet, production_sheet_id)
+    if not production_sheet:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Production sheet not found."
+        )
+
+    return production_sheet
+
+
 def ensure_unique_production_ref(production_ref: int, db: Session):
 
     statement = select(ProductionSheet).where(

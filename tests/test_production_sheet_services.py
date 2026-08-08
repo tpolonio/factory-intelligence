@@ -328,3 +328,43 @@ def test_list_production_sheets_applies_limit():
 
     finally:
         db.close()
+
+
+def test_get_production_sheet_returns_existing_sheet():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+
+        new_production_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(),
+            db,
+        )
+
+        production_sheet = production_sheets.get_production_sheet(
+            production_sheet_id=new_production_sheet.id,
+            db=db,
+        )
+
+        assert production_sheet.id == new_production_sheet.id
+        assert production_sheet.production_ref == new_production_sheet.production_ref
+    finally:
+        db.close()
+
+
+def test_missing_production_sheet_returns_not_found():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        production_sheets.create_production_sheet(
+            build_production_sheet_payload(),
+            db,
+        )
+
+        with pytest.raises(HTTPException) as exc_info:
+            production_sheets.get_production_sheet(production_sheet_id=999, db=db)
+
+        assert exc_info.value.status_code == 404
+    finally:
+        db.close()
