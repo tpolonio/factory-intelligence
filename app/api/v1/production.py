@@ -82,6 +82,22 @@ def list_production_sheets(
     return production_sheet_retrieved
 
 
+@router.get(
+    "/production-sheets/{production_sheet_id}",
+    response_model=ProductionSheetRead,
+    status_code=status.HTTP_200_OK,
+)
+def show_production_sheet(
+    db: Annotated[Session, Depends(get_db)],
+    production_sheet_id: int,
+):
+    production_sheet_retrieved = production_sheet_service.get_production_sheet(
+        production_sheet_id=production_sheet_id,
+        db=db,
+    )
+    return production_sheet_retrieved
+
+
 # ---------------------------------Production Lines--------------------------------------#
 
 

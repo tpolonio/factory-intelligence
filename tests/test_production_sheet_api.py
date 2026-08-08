@@ -132,3 +132,43 @@ def test_create_production_sheet_through_api():
         assert body["resin_type_id"] == resin_type_id
     finally:
         app.dependency_overrides.clear()
+
+
+def test_get_production_sheet_through_api():
+
+    try:
+        app.dependency_overrides[get_db] = override_get_db
+        client = TestClient(app)
+
+        create_line_response = create_production_line(client)
+        create_shift_response = create_shift(client)
+        create_resin_response = create_resin_type(client)
+
+        line_id = create_line_response["id"]
+        shift_id = create_shift_response["id"]
+        resin_type_id = create_resin_response["id"]
+
+        payload = build_production_sheet_payload(
+            production_line_id=line_id, shift_id=shift_id, resin_type_id=resin_type_id
+        ).model_dump(mode="json")
+
+        new_production_sheet = client.post(
+            url="/api/v1/production/production-sheets",
+            json=payload,
+        )
+
+        created_sheet_id = new_production_sheet.json()["id"]
+
+        response = client.get(
+            url=f"/api/v1/production/production-sheets/{created_sheet_id}",
+        )
+
+        body = response.json()
+
+        assert response.status_code == 200, response.json()
+        assert body["id"] == created_sheet_id
+        assert body["production_line_id"] == line_id
+        assert body["shift_id"] == shift_id
+        assert body["resin_type_id"] == resin_type_id
+    finally:
+        app.dependency_overrides.clear()
