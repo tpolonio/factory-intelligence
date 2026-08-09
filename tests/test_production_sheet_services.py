@@ -368,3 +368,41 @@ def test_missing_production_sheet_returns_not_found():
         assert exc_info.value.status_code == 404
     finally:
         db.close()
+
+
+def test_list_production_sheets_can_filter_by_date_range():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        sheet_1_date = datetime(2026, 8, 1, tzinfo=timezone.utc)
+        sheet_2_date = datetime(2026, 8, 10, tzinfo=timezone.utc)
+
+        date_from = datetime(2026, 8, 1, 0, 0, tzinfo=timezone.utc)
+        date_to = datetime(2026, 8, 5, 23, 59, tzinfo=timezone.utc)
+
+        new_production_sheet_1 = production_sheets.create_production_sheet(
+            build_production_sheet_payload(
+                production_date=sheet_1_date, production_ref=1
+            ),
+            db,
+        )
+
+        new_production_sheet_2 = production_sheets.create_production_sheet(
+            build_production_sheet_payload(
+                production_date=sheet_2_date, production_ref=2
+            ),
+            db,
+        )
+
+        production_sheets_list = production_sheets.list_production_sheets(
+            production_date_from=date_from,
+            production_date_to=date_to,
+            db=db,
+        )
+        assert len(production_sheets_list) == 1
+        assert production_sheets_list[0].id == new_production_sheet_1.id
+        assert production_sheets_list[0].id != new_production_sheet_2.id
+
+    finally:
+        db.close()
