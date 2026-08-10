@@ -183,6 +183,7 @@ Endpoints:
 POST /api/v1/production/production-sheets
 GET  /api/v1/production/production-sheets
 GET  /api/v1/production/production-sheets/{production_sheet_id}
+GET  /api/v1/production/production-sheets/{production_sheet_id}/assessment
 ```
 
 Create request:
@@ -339,6 +340,35 @@ Detail response:
   "rejection_rate": 6.504065040650407,
   "created_at": "2026-08-05T00:07:39.528467Z",
   "updated_at": "2026-08-05T00:07:39.528467Z"
+}
+```
+
+Example operational assessment request:
+
+```text
+GET /api/v1/production/production-sheets/1/assessment
+```
+
+Operational assessment response:
+
+```json
+{
+  "production_sheet_id": 1,
+  "production_ref": 20260805,
+  "accepted_panels": 115,
+  "rejection_rate": 6.504065040650407,
+  "net_production_time": 130.1,
+  "downtime_rate": 13.554817275747509,
+  "quality_status": "warning",
+  "downtime_status": "warning",
+  "sustainability_status": "below_target",
+  "overall_status": "warning",
+  "flags": [
+    "high_rejection_rate",
+    "downtime_above_target",
+    "recycled_material_below_target"
+  ],
+  "main_issue": "high_rejection_rate"
 }
 ```
 

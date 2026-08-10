@@ -161,8 +161,12 @@ Expected local services:
 Run tests:
 
 ```bash
-pytest
+.venv/bin/python -m pytest -q
 ```
+
+API tests use `httpx2.AsyncClient` with an in-process ASGI transport instead of
+FastAPI's sync `TestClient`. This keeps the tests compatible with the current
+FastAPI/Starlette/Python stack while still exercising the real HTTP routes.
 
 ---
 

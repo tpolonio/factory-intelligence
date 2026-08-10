@@ -18,13 +18,17 @@ from app.schemas.base_models import (
     ShiftCreate,
     ShiftRead,
 )
-from app.schemas.production import ProductionSheetCreate, ProductionSheetRead
+from app.schemas.production import (
+    ProductionSheetCreate,
+    ProductionSheetOperationalAssessmentRead,
+    ProductionSheetRead,
+)
 
 router = APIRouter()
 
 
 @router.get("/health")
-def production_health_check():
+async def production_health_check():
     return {"domain": "production", "status": "healthy"}
 
 
@@ -36,7 +40,7 @@ def production_health_check():
     response_model=ProductionSheetRead,
     status_code=status.HTTP_201_CREATED,
 )
-def add_new_production_sheet(
+async def add_new_production_sheet(
     production_sheet_input: ProductionSheetCreate,
     db: Annotated[Session, Depends(get_db)],
 ):
@@ -53,7 +57,7 @@ def add_new_production_sheet(
     response_model=list[ProductionSheetRead],
     status_code=status.HTTP_200_OK,
 )
-def list_production_sheets(
+async def list_production_sheets(
     db: Annotated[Session, Depends(get_db)],
     production_line_id: int | None = Query(default=None, gt=0),
     shift_id: int | None = Query(default=None, gt=0),
@@ -87,7 +91,7 @@ def list_production_sheets(
     response_model=ProductionSheetRead,
     status_code=status.HTTP_200_OK,
 )
-def show_production_sheet(
+async def show_production_sheet(
     db: Annotated[Session, Depends(get_db)],
     production_sheet_id: int,
 ):
@@ -98,13 +102,31 @@ def show_production_sheet(
     return production_sheet_retrieved
 
 
+@router.get(
+    "/production-sheets/{production_sheet_id}/assessment",
+    response_model=ProductionSheetOperationalAssessmentRead,
+    status_code=status.HTTP_200_OK,
+)
+async def show_production_sheet_assessment(
+    db: Annotated[Session, Depends(get_db)],
+    production_sheet_id: int,
+):
+    production_sheet_retrieved = (
+        production_sheet_service.get_production_sheet_operational_assessment(
+            production_sheet_id=production_sheet_id,
+            db=db,
+        )
+    )
+    return production_sheet_retrieved
+
+
 # ---------------------------------Production Lines--------------------------------------#
 
 
 @router.post(
     "/lines", response_model=ProductionLineRead, status_code=status.HTTP_201_CREATED
 )
-def add_new_production_line(
+async def add_new_production_line(
     production_line_input: ProductionLineCreate,
     db: Annotated[Session, Depends(get_db)],
 ):
@@ -117,7 +139,7 @@ def add_new_production_line(
 
 
 @router.get("/lines", response_model=list[ProductionLineRead])
-def list_production_lines(
+async def list_production_lines(
     db: Annotated[Session, Depends(get_db)],
     name: str | None = None,
     limit: int = Query(default=20, ge=1, le=100),
@@ -131,7 +153,7 @@ def list_production_lines(
 
 
 @router.get("/lines/{line_id}", response_model=ProductionLineRead)
-def show_production_line(line_id: int, db: Annotated[Session, Depends(get_db)]):
+async def show_production_line(line_id: int, db: Annotated[Session, Depends(get_db)]):
 
     production_line = production_line_service.get_production_line(
         line_id=line_id, db=db
@@ -145,7 +167,7 @@ def show_production_line(line_id: int, db: Annotated[Session, Depends(get_db)]):
 @router.post(
     "/resin-types", response_model=ResinTypeRead, status_code=status.HTTP_201_CREATED
 )
-def add_new_resin_type(
+async def add_new_resin_type(
     resin_type_input: ResinTypeCreate,
     db: Annotated[Session, Depends(get_db)],
 ):
@@ -156,7 +178,7 @@ def add_new_resin_type(
 
 
 @router.get("/resin-types", response_model=list[ResinTypeRead])
-def list_resin_types(
+async def list_resin_types(
     db: Annotated[Session, Depends(get_db)],
     name: str | None = None,
     limit: int = Query(default=20, ge=1, le=100),
@@ -170,7 +192,7 @@ def list_resin_types(
 
 
 @router.get("/resin-types/{resin_type_id}", response_model=ResinTypeRead)
-def show_resin_type(resin_type_id: int, db: Annotated[Session, Depends(get_db)]):
+async def show_resin_type(resin_type_id: int, db: Annotated[Session, Depends(get_db)]):
 
     resin_type = resin_type_service.get_resin_type(resin_type_id=resin_type_id, db=db)
     return resin_type
@@ -180,7 +202,9 @@ def show_resin_type(resin_type_id: int, db: Annotated[Session, Depends(get_db)])
 
 
 @router.post("/shifts", response_model=ShiftRead, status_code=status.HTTP_201_CREATED)
-def add_new_shift(shift_input: ShiftCreate, db: Annotated[Session, Depends(get_db)]):
+async def add_new_shift(
+    shift_input: ShiftCreate, db: Annotated[Session, Depends(get_db)]
+):
 
     new_shift = shift_service.create_shift(shift_input, db)
 
@@ -188,7 +212,7 @@ def add_new_shift(shift_input: ShiftCreate, db: Annotated[Session, Depends(get_d
 
 
 @router.get("/shifts", response_model=list[ShiftRead])
-def list_shifts(
+async def list_shifts(
     db: Annotated[Session, Depends(get_db)],
     shift_letter: str | None = None,
     press_operator: str | None = None,
@@ -209,7 +233,7 @@ def list_shifts(
 
 
 @router.get("/shifts/{shift_id}", response_model=ShiftRead)
-def show_shift(shift_id: int, db: Annotated[Session, Depends(get_db)]):
+async def show_shift(shift_id: int, db: Annotated[Session, Depends(get_db)]):
 
     shift = shift_service.get_shift(shift_id=shift_id, db=db)
     return shift

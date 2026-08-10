@@ -13,10 +13,10 @@ app.include_router(router, prefix="/api/v1")
 
 
 @app.get("/")
-def read_root():
+async def read_root():
     return {"message": "Welcome to the Factory Intelligence API!"}
 
 
 @app.get("/health")
-def health_check():
+async def health_check():
     return {"status": "healthy"}

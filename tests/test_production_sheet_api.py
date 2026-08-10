@@ -4,7 +4,8 @@ os.environ.setdefault("DATABASE_URL", "postgresql://test:test@localhost/test")
 
 from datetime import datetime, timezone
 
-from fastapi.testclient import TestClient
+import httpx2
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -23,12 +24,17 @@ engine = create_engine(
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
+@pytest.fixture
+def anyio_backend():
+    return "asyncio"
+
+
 def setup_function():
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
 
-def override_get_db():
+async def override_get_db():
     db = TestingSessionLocal()
     try:
         yield db
@@ -36,8 +42,16 @@ def override_get_db():
         db.close()
 
 
-def create_production_line(client):
-    create_line_response = client.post(
+def build_test_client():
+    transport = httpx2.ASGITransport(app=app)
+    return httpx2.AsyncClient(
+        transport=transport,
+        base_url="http://testserver",
+    )
+
+
+async def create_production_line(client):
+    create_line_response = await client.post(
         url="/api/v1/production/lines",
         json={
             "name": "Line 1",
@@ -48,8 +62,8 @@ def create_production_line(client):
     return create_line_response.json()
 
 
-def create_shift(client):
-    create_shift_response = client.post(
+async def create_shift(client):
+    create_shift_response = await client.post(
         url="/api/v1/production/shifts",
         json={
             "shift_letter": "A",
@@ -61,8 +75,8 @@ def create_shift(client):
     return create_shift_response.json()
 
 
-def create_resin_type(client):
-    create_resin_response = client.post(
+async def create_resin_type(client):
+    create_resin_response = await client.post(
         url="/api/v1/production/resin-types",
         json={
             "name": "UF",
@@ -101,74 +115,141 @@ def build_production_sheet_payload(**overrides):
     return ProductionSheetCreate(**data)
 
 
-def test_create_production_sheet_through_api():
+@pytest.mark.anyio
+async def test_create_production_sheet_through_api():
 
     try:
         app.dependency_overrides[get_db] = override_get_db
-        client = TestClient(app)
+        async with build_test_client() as client:
+            create_line_response = await create_production_line(client)
+            create_shift_response = await create_shift(client)
+            create_resin_response = await create_resin_type(client)
 
-        create_line_response = create_production_line(client)
-        create_shift_response = create_shift(client)
-        create_resin_response = create_resin_type(client)
+            line_id = create_line_response["id"]
+            shift_id = create_shift_response["id"]
+            resin_type_id = create_resin_response["id"]
 
-        line_id = create_line_response["id"]
-        shift_id = create_shift_response["id"]
-        resin_type_id = create_resin_response["id"]
+            payload = build_production_sheet_payload(
+                production_line_id=line_id,
+                shift_id=shift_id,
+                resin_type_id=resin_type_id,
+            ).model_dump(mode="json")
 
-        payload = build_production_sheet_payload(
-            production_line_id=line_id, shift_id=shift_id, resin_type_id=resin_type_id
-        ).model_dump(mode="json")
+            response = await client.post(
+                url="/api/v1/production/production-sheets",
+                json=payload,
+            )
 
-        response = client.post(
-            url="/api/v1/production/production-sheets",
-            json=payload,
-        )
+            body = response.json()
 
-        body = response.json()
-
-        assert response.status_code == 201, response.json()
-        assert body["production_line_id"] == line_id
-        assert body["shift_id"] == shift_id
-        assert body["resin_type_id"] == resin_type_id
+            assert response.status_code == 201, response.json()
+            assert body["production_line_id"] == line_id
+            assert body["shift_id"] == shift_id
+            assert body["resin_type_id"] == resin_type_id
     finally:
         app.dependency_overrides.clear()
 
 
-def test_get_production_sheet_through_api():
+@pytest.mark.anyio
+async def test_get_production_sheet_through_api():
 
     try:
         app.dependency_overrides[get_db] = override_get_db
-        client = TestClient(app)
+        async with build_test_client() as client:
+            create_line_response = await create_production_line(client)
+            create_shift_response = await create_shift(client)
+            create_resin_response = await create_resin_type(client)
 
-        create_line_response = create_production_line(client)
-        create_shift_response = create_shift(client)
-        create_resin_response = create_resin_type(client)
+            line_id = create_line_response["id"]
+            shift_id = create_shift_response["id"]
+            resin_type_id = create_resin_response["id"]
 
-        line_id = create_line_response["id"]
-        shift_id = create_shift_response["id"]
-        resin_type_id = create_resin_response["id"]
+            payload = build_production_sheet_payload(
+                production_line_id=line_id,
+                shift_id=shift_id,
+                resin_type_id=resin_type_id,
+            ).model_dump(mode="json")
 
-        payload = build_production_sheet_payload(
-            production_line_id=line_id, shift_id=shift_id, resin_type_id=resin_type_id
-        ).model_dump(mode="json")
+            new_production_sheet = await client.post(
+                url="/api/v1/production/production-sheets",
+                json=payload,
+            )
 
-        new_production_sheet = client.post(
-            url="/api/v1/production/production-sheets",
-            json=payload,
-        )
+            created_sheet_id = new_production_sheet.json()["id"]
 
-        created_sheet_id = new_production_sheet.json()["id"]
+            response = await client.get(
+                url=f"/api/v1/production/production-sheets/{created_sheet_id}",
+            )
 
-        response = client.get(
-            url=f"/api/v1/production/production-sheets/{created_sheet_id}",
-        )
+            body = response.json()
 
-        body = response.json()
+            assert response.status_code == 200, response.json()
+            assert body["id"] == created_sheet_id
+            assert body["production_line_id"] == line_id
+            assert body["shift_id"] == shift_id
+            assert body["resin_type_id"] == resin_type_id
+    finally:
+        app.dependency_overrides.clear()
 
-        assert response.status_code == 200, response.json()
-        assert body["id"] == created_sheet_id
-        assert body["production_line_id"] == line_id
-        assert body["shift_id"] == shift_id
-        assert body["resin_type_id"] == resin_type_id
+
+@pytest.mark.anyio
+async def test_get_production_sheet_assessment_through_api_returns_ok():
+
+    try:
+        app.dependency_overrides[get_db] = override_get_db
+        async with build_test_client() as client:
+            create_line_response = await create_production_line(client)
+            create_shift_response = await create_shift(client)
+            create_resin_response = await create_resin_type(client)
+
+            line_id = create_line_response["id"]
+            shift_id = create_shift_response["id"]
+            resin_type_id = create_resin_response["id"]
+
+            payload = build_production_sheet_payload(
+                production_line_id=line_id,
+                shift_id=shift_id,
+                resin_type_id=resin_type_id,
+            ).model_dump(mode="json")
+
+            new_production_sheet = await client.post(
+                url="/api/v1/production/production-sheets",
+                json=payload,
+            )
+
+            assert new_production_sheet.status_code == 201, new_production_sheet.json()
+
+            created_sheet_id = new_production_sheet.json()["id"]
+
+            response = await client.get(
+                url=f"/api/v1/production/production-sheets/{created_sheet_id}/assessment",
+            )
+
+            body = response.json()
+
+            assert response.status_code == 200, response.json()
+            assert body["accepted_panels"] == 115
+            assert body["quality_status"] == "warning"
+            assert body["flags"] == [
+                "high_rejection_rate",
+                "downtime_above_target",
+                "recycled_material_below_target",
+            ]
+            assert body["main_issue"] == "high_rejection_rate"
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.anyio
+async def test_get_production_sheet_assessment_through_api_returns_not_found():
+
+    try:
+        app.dependency_overrides[get_db] = override_get_db
+        async with build_test_client() as client:
+            response = await client.get(
+                url="/api/v1/production/production-sheets/99/assessment",
+            )
+
+            assert response.status_code == 404, response.json()
     finally:
         app.dependency_overrides.clear()

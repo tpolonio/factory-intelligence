@@ -73,3 +73,18 @@ class ProductionSheetRead(BaseModel):
     rejection_rate: float
     created_at: datetime
     updated_at: datetime
+
+
+class ProductionSheetOperationalAssessmentRead(BaseModel):
+    production_sheet_id: int
+    production_ref: int
+    accepted_panels: int
+    rejection_rate: float
+    net_production_time: float
+    downtime_rate: float
+    quality_status: str
+    downtime_status: str
+    sustainability_status: str
+    overall_status: str
+    flags: list[str]
+    main_issue: str | None
