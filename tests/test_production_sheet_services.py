@@ -536,3 +536,75 @@ def test_get_production_sheet_operational_assessment_missing_sheet_returns_not_f
 
     finally:
         db.close()
+
+
+def test_list_production_sheets_orders_newest_production_date_first():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+
+        newest_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(
+                production_date=datetime(2026, 8, 10, tzinfo=timezone.utc),
+                production_ref=1,
+            ),
+            db,
+        )
+        oldest_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(
+                production_date=datetime(2026, 8, 1, tzinfo=timezone.utc),
+                production_ref=2,
+            ),
+            db,
+        )
+        middle_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(
+                production_date=datetime(2026, 8, 5, tzinfo=timezone.utc),
+                production_ref=3,
+            ),
+            db,
+        )
+
+        production_sheets_list = production_sheets.list_production_sheets(db=db)
+
+        ordered_ids = [sheet.id for sheet in production_sheets_list]
+        assert ordered_ids == [
+            newest_sheet.id,
+            middle_sheet.id,
+            oldest_sheet.id,
+        ]
+
+    finally:
+        db.close()
+
+
+def test_list_production_sheets_orders_newer_insertion_first_when_dates_match():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        same_production_date = datetime(2026, 8, 1, 12, 0, tzinfo=timezone.utc)
+
+        first_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(
+                production_date=same_production_date,
+                production_ref=1,
+            ),
+            db,
+        )
+        second_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(
+                production_date=same_production_date,
+                production_ref=2,
+            ),
+            db,
+        )
+
+        production_sheets_list = production_sheets.list_production_sheets(db=db)
+
+        ordered_ids = [sheet.id for sheet in production_sheets_list]
+        assert ordered_ids == [second_sheet.id, first_sheet.id]
+
+    finally:
+        db.close()

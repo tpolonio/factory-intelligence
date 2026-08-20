@@ -263,6 +263,8 @@ limit: default 20, minimum 1, maximum 100
 offset: default 0, minimum 0
 ```
 
+Results are ordered by `production_date` descending, with `id` descending as a tiebreaker so pagination is deterministic.
+
 Example list request:
 
 ```text

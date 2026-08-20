@@ -108,6 +108,10 @@ def list_production_sheets(
             ProductionSheet.production_date <= production_date_to
         )
 
+    statement = statement.order_by(
+        ProductionSheet.production_date.desc(), ProductionSheet.id.desc()
+    )
+
     if offset is not None:
         statement = statement.offset(offset)
 
