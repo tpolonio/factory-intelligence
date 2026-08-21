@@ -482,6 +482,77 @@ def test_get_production_sheet_operational_assessment_returns_critical_downtime()
         db.close()
 
 
+def test_get_production_sheet_operational_assessment_returns_critical_rejection():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        new_production_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(
+                total_downtime=0,
+                panels_produced=100,
+                panels_rejected=40,
+                percentage_recycled_material=25,
+            ),
+            db,
+        )
+
+        operational_assessment = (
+            production_sheets.get_production_sheet_operational_assessment(
+                new_production_sheet.id, db
+            )
+        )
+
+        assert operational_assessment["accepted_panels"] == 60
+        assert operational_assessment["rejection_rate"] == 40
+        assert operational_assessment["quality_status"] == "critical"
+        assert operational_assessment["flags"] == [
+            "critical_rejection_rate",
+        ]
+        assert operational_assessment["main_issue"] == "critical_rejection_rate"
+        assert operational_assessment["overall_status"] == "critical"
+
+    finally:
+        db.close()
+
+
+def test_get_production_sheet_operational_assessment_returns_critical_rejection_and_downtime():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        new_production_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(
+                total_downtime=50,
+                panels_produced=100,
+                panels_rejected=40,
+                percentage_recycled_material=25,
+            ),
+            db,
+        )
+
+        operational_assessment = (
+            production_sheets.get_production_sheet_operational_assessment(
+                new_production_sheet.id, db
+            )
+        )
+
+        assert operational_assessment["accepted_panels"] == 60
+        assert operational_assessment["rejection_rate"] == 40
+        assert operational_assessment["net_production_time"] == 100.5
+        assert operational_assessment["quality_status"] == "critical"
+        assert operational_assessment["downtime_status"] == "critical"
+        assert operational_assessment["flags"] == [
+            "critical_rejection_rate",
+            "critical_downtime",
+        ]
+        assert operational_assessment["main_issue"] == "critical_rejection_rate"
+        assert operational_assessment["overall_status"] == "critical"
+
+    finally:
+        db.close()
+
+
 def test_get_production_sheet_operational_assessment_returns_warning_rejection_and_low_sustainability():
     db = TestingSessionLocal()
 
