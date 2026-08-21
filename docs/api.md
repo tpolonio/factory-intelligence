@@ -374,6 +374,11 @@ Operational assessment response:
 }
 ```
 
+Assessment thresholds (rejection rate warning/critical, downtime rate warning/critical, recycled
+material target) are named service-level constants representing the current default policy.
+In real manufacturing these targets are product-specific; per-product target configuration is a
+planned future step.
+
 Validation notes:
 
 ```text

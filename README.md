@@ -5,8 +5,9 @@ It is designed to help quality teams and production managers turn CSV exports fr
 and production systems into useful operational insights such as statistical quality analysis,
 OEE tracking, and shift-level reporting.
 
-The project is currently in an early-stage scaffold phase, but the long-term goal is to provide
-an API-driven workflow for ingestion, validation, analysis, and report generation.
+The project is in active development. Production sheet workflows are implemented end to end —
+creation, filtered querying, detail lookup, and per-run operational assessment — while lab test
+endpoints, CSV ingestion, and reporting remain on the roadmap.
 
 ---
 
@@ -20,9 +21,8 @@ Factory Intelligence aims to replace part of that workflow with a structured API
 
 ## Current Capabilities
 
-Factory Intelligence is in the foundation phase. The project currently supports reference-data
-management for production lines, resin types, and shifts, plus production sheet creation and
-query workflows.
+Factory Intelligence currently supports reference-data management for production lines, resin
+types, and shifts, plus complete production sheet workflows.
 
 Implemented:
 
@@ -33,17 +33,20 @@ Implemented:
 - Pydantic request and response schemas for implemented workflows
 - Reference-data endpoints for production lines, resin types, and shifts
 - Production sheet creation with reference-record validation
-- Production sheet listing with operational filters and pagination
+- Production sheet listing with operational filters, pagination, and deterministic ordering (newest first)
+- Production sheet detail retrieval
+- Per-run operational assessment: quality, downtime, and sustainability statuses with flags and main-issue prioritization
 - Service-layer business logic for implemented production workflows
-- Pytest coverage for reference-data services and production sheet creation
+- Pytest coverage for reference-data services and production sheet workflows
 
 Not yet implemented:
 
-- Production sheet detail, update, and delete workflows
+- Production sheet update and delete workflows
 - Lab test schemas and endpoints
 - CSV ingestion and parsing workflows
 - Lab quality analysis endpoints
 - Production OEE and stoppage analysis endpoints
+- Product-specific process target configuration (assessment thresholds are currently service-level defaults)
 - Async report generation and PDF delivery
 - Deployment infrastructure beyond local development
 
@@ -147,7 +150,7 @@ Requirements:
 - Docker Compose v2
 
 ```bash
-git clone https://github.com/[username]/factory-intelligence.git
+git clone https://github.com/TPolonio/factory-intelligence.git
 cd factory-intelligence
 cp .env.example .env
 docker compose up --build
