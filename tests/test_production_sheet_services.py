@@ -679,3 +679,154 @@ def test_list_production_sheets_orders_newer_insertion_first_when_dates_match():
 
     finally:
         db.close()
+
+
+def test_get_production_sheet_operational_assessment_process_params_within_target():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        new_production_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(),
+            db,
+        )
+
+        operational_assessment = (
+            production_sheets.get_production_sheet_operational_assessment(
+                new_production_sheet.id, db
+            )
+        )
+
+        assert (
+            operational_assessment["process_parameters"]["press_temperature"]["status"]
+            == "within_target"
+        )
+        assert (
+            operational_assessment["process_parameters"]["press_pressure"]["status"]
+            == "within_target"
+        )
+        assert (
+            operational_assessment["process_parameters"]["press_factor"]["status"]
+            == "within_target"
+        )
+        assert (
+            operational_assessment["process_parameters"]["forming_line_speed"]["status"]
+            == "within_target"
+        )
+
+    finally:
+        db.close()
+
+
+def test_get_production_sheet_operational_assessment_press_temperature_above_target():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        new_production_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(press_temperature=200),
+            db,
+        )
+
+        operational_assessment = (
+            production_sheets.get_production_sheet_operational_assessment(
+                new_production_sheet.id, db
+            )
+        )
+
+        assert (
+            operational_assessment["process_parameters"]["press_temperature"]["status"]
+            == "above_target"
+        )
+
+        assert (
+            operational_assessment["process_parameters"]["press_pressure"]["status"]
+            == "within_target"
+        )
+        assert (
+            operational_assessment["process_parameters"]["press_factor"]["status"]
+            == "within_target"
+        )
+        assert (
+            operational_assessment["process_parameters"]["forming_line_speed"]["status"]
+            == "within_target"
+        )
+
+    finally:
+        db.close()
+
+
+def test_get_production_sheet_operational_assessment_press_temperature_below_target():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        new_production_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(press_temperature=100),
+            db,
+        )
+
+        operational_assessment = (
+            production_sheets.get_production_sheet_operational_assessment(
+                new_production_sheet.id, db
+            )
+        )
+
+        assert (
+            operational_assessment["process_parameters"]["press_temperature"]["status"]
+            == "below_target"
+        )
+
+        assert (
+            operational_assessment["process_parameters"]["press_pressure"]["status"]
+            == "within_target"
+        )
+        assert (
+            operational_assessment["process_parameters"]["press_factor"]["status"]
+            == "within_target"
+        )
+        assert (
+            operational_assessment["process_parameters"]["forming_line_speed"]["status"]
+            == "within_target"
+        )
+
+    finally:
+        db.close()
+
+
+def test_get_production_sheet_operational_assessment_press_temperature_at_target_limit():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        new_production_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(press_temperature=170),
+            db,
+        )
+
+        operational_assessment = (
+            production_sheets.get_production_sheet_operational_assessment(
+                new_production_sheet.id, db
+            )
+        )
+
+        assert (
+            operational_assessment["process_parameters"]["press_temperature"]["status"]
+            == "within_target"
+        )
+
+        assert (
+            operational_assessment["process_parameters"]["press_pressure"]["status"]
+            == "within_target"
+        )
+        assert (
+            operational_assessment["process_parameters"]["press_factor"]["status"]
+            == "within_target"
+        )
+        assert (
+            operational_assessment["process_parameters"]["forming_line_speed"]["status"]
+            == "within_target"
+        )
+
+    finally:
+        db.close()

@@ -17,6 +17,18 @@ DOWNTIME_RATE_CRITICAL_THRESHOLD = 20.0
 
 RECYCLED_MATERIAL_TARGET_PERCENTAGE = 20.0
 
+PRESS_TEMPERATURE_TARGET = 180.0
+PRESS_TEMPERATURE_TOLERANCE = 10.0
+
+PRESS_PRESSURE_TARGET = 150.0
+PRESS_PRESSURE_TOLERANCE = 15.0
+
+PRESS_FACTOR_TARGET = 0.8
+PRESS_FACTOR_TOLERANCE = 0.1
+
+FORMING_LINE_SPEED_TARGET = 10.0
+FORMING_LINE_SPEED_TOLERANCE = 2.0
+
 STATUS_GOOD = "good"
 STATUS_WARNING = "warning"
 STATUS_CRITICAL = "critical"
@@ -24,11 +36,18 @@ STATUS_CRITICAL = "critical"
 SUSTAINABILITY_TARGET_MET = "target_met"
 SUSTAINABILITY_BELOW_TARGET = "below_target"
 
+PARAMETER_STATUS_WITHIN_TARGET = "within_target"
+PARAMETER_STATUS_BELOW_TARGET = "below_target"
+PARAMETER_STATUS_ABOVE_TARGET = "above_target"
+
 FLAG_HIGH_REJECTION_RATE = "high_rejection_rate"
 FLAG_CRITICAL_REJECTION_RATE = "critical_rejection_rate"
+
 FLAG_DOWNTIME_ABOVE_TARGET = "downtime_above_target"
 FLAG_CRITICAL_DOWNTIME = "critical_downtime"
+
 FLAG_RECYCLED_MATERIAL_BELOW_TARGET = "recycled_material_below_target"
+
 
 MAIN_ISSUE_PRIORITY = [
     FLAG_CRITICAL_REJECTION_RATE,
@@ -165,6 +184,8 @@ def get_production_sheet_operational_assessment(
         downtime_status=downtime_status,
     )
 
+    process_parameters = assess_process_parameters(production_sheet)
+
     flags = build_operational_flags(
         quality_status=quality_status,
         downtime_status=downtime_status,
@@ -183,6 +204,7 @@ def get_production_sheet_operational_assessment(
         "quality_status": quality_status,
         "downtime_status": downtime_status,
         "sustainability_status": sustainability_status,
+        "process_parameters": process_parameters,
         "overall_status": overall_status,
         "flags": flags,
         "main_issue": main_issue,
@@ -261,6 +283,51 @@ def classify_sustainability_status(recycled_material_percentage: float) -> str:
         return SUSTAINABILITY_TARGET_MET
 
     return SUSTAINABILITY_BELOW_TARGET
+
+
+def classify_process_parameter_status(
+    value: float, target: float, tolerance: float
+) -> str:
+    if value > (target + tolerance):
+        return PARAMETER_STATUS_ABOVE_TARGET
+
+    if value < (target - tolerance):
+        return PARAMETER_STATUS_BELOW_TARGET
+
+    return PARAMETER_STATUS_WITHIN_TARGET
+
+
+def assess_process_parameters(production_sheet: ProductionSheet) -> dict:
+    parameters = {
+        "forming_line_speed": (
+            production_sheet.forming_line_speed,
+            FORMING_LINE_SPEED_TARGET,
+            FORMING_LINE_SPEED_TOLERANCE,
+        ),
+        "press_factor": (
+            production_sheet.press_factor,
+            PRESS_FACTOR_TARGET,
+            PRESS_FACTOR_TOLERANCE,
+        ),
+        "press_pressure": (
+            production_sheet.press_pressure,
+            PRESS_PRESSURE_TARGET,
+            PRESS_PRESSURE_TOLERANCE,
+        ),
+        "press_temperature": (
+            production_sheet.press_temperature,
+            PRESS_TEMPERATURE_TARGET,
+            PRESS_TEMPERATURE_TOLERANCE,
+        ),
+    }
+
+    return {
+        name: {
+            "value": value,
+            "status": classify_process_parameter_status(value, target, tolerance),
+        }
+        for name, (value, target, tolerance) in parameters.items()
+    }
 
 
 def classify_overall_status(quality_status: str, downtime_status: str) -> str:

@@ -364,6 +364,24 @@ Operational assessment response:
   "quality_status": "warning",
   "downtime_status": "warning",
   "sustainability_status": "below_target",
+  "process_parameters": {
+    "forming_line_speed": {
+      "value": 10.5,
+      "status": "within_target"
+    },
+    "press_factor": {
+      "value": 0.8,
+      "status": "within_target"
+    },
+    "press_pressure": {
+      "value": 150.0,
+      "status": "within_target"
+    },
+    "press_temperature": {
+      "value": 180.0,
+      "status": "within_target"
+    }
+  },
   "overall_status": "warning",
   "flags": [
     "high_rejection_rate",
@@ -373,6 +391,13 @@ Operational assessment response:
   "main_issue": "high_rejection_rate"
 }
 ```
+
+Process parameters are classified against target windows as
+`within_target`, `below_target`, or `above_target`. Window boundaries are inclusive: a value
+exactly at `target - tolerance` or `target + tolerance` counts as `within_target`. The current
+targets are illustrative defaults for a single product family; in real manufacturing, press
+windows are product-specific (panel type, thickness band), and per-product target configuration
+is a planned future step.
 
 Assessment thresholds (rejection rate warning/critical, downtime rate warning/critical, recycled
 material target) are named service-level constants representing the current default policy.

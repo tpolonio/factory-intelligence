@@ -75,6 +75,11 @@ class ProductionSheetRead(BaseModel):
     updated_at: datetime
 
 
+class ProcessParameterAssessmentRead(BaseModel):
+    value: float
+    status: str
+
+
 class ProductionSheetOperationalAssessmentRead(BaseModel):
     production_sheet_id: int
     production_ref: int
@@ -85,6 +90,7 @@ class ProductionSheetOperationalAssessmentRead(BaseModel):
     quality_status: str
     downtime_status: str
     sustainability_status: str
+    process_parameters: dict[str, ProcessParameterAssessmentRead]
     overall_status: str
     flags: list[str]
     main_issue: str | None
