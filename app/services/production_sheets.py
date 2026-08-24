@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -28,6 +29,8 @@ PRESS_FACTOR_TOLERANCE = 0.1
 
 FORMING_LINE_SPEED_TARGET = 10.0
 FORMING_LINE_SPEED_TOLERANCE = 2.0
+
+TWO_DECIMAL_PLACES = Decimal("0.01")
 
 STATUS_GOOD = "good"
 STATUS_WARNING = "warning"
@@ -186,6 +189,13 @@ def get_production_sheet_operational_assessment(
 
     process_parameters = assess_process_parameters(production_sheet)
 
+    material_efficiency = compute_material_efficiency(
+        production_sheet.resin_dosed,
+        production_sheet.paraffin_dosed,
+        production_sheet.urea_dosed,
+        accepted_panels,
+    )
+
     flags = build_operational_flags(
         quality_status=quality_status,
         downtime_status=downtime_status,
@@ -205,6 +215,7 @@ def get_production_sheet_operational_assessment(
         "downtime_status": downtime_status,
         "sustainability_status": sustainability_status,
         "process_parameters": process_parameters,
+        "material_efficiency": material_efficiency,
         "overall_status": overall_status,
         "flags": flags,
         "main_issue": main_issue,
@@ -369,3 +380,44 @@ def choose_main_issue(flags: list[str]) -> str | None:
             return issue
 
     return None
+
+
+def compute_material_efficiency(
+    resin_dosed: Decimal,
+    paraffin_dosed: Decimal,
+    urea_dosed: Decimal,
+    accepted_panels: int,
+) -> dict:
+
+    chemical_total_dosed = resin_dosed + paraffin_dosed + urea_dosed
+
+    if accepted_panels == 0:
+        return {
+            "chemical_total_dosed": chemical_total_dosed,
+            "resin_per_accepted_panel": Decimal(0),
+            "paraffin_per_accepted_panel": Decimal(0),
+            "urea_per_accepted_panel": Decimal(0),
+            "chemical_dose_per_accepted_panel": Decimal(0),
+        }
+
+    resin_per_accepted_panel = resin_dosed / accepted_panels
+
+    paraffin_per_accepted_panel = paraffin_dosed / accepted_panels
+
+    urea_per_accepted_panel = urea_dosed / accepted_panels
+
+    chemical_dose_per_accepted_panel = chemical_total_dosed / accepted_panels
+
+    return {
+        "chemical_total_dosed": chemical_total_dosed.quantize(TWO_DECIMAL_PLACES),
+        "resin_per_accepted_panel": resin_per_accepted_panel.quantize(
+            TWO_DECIMAL_PLACES
+        ),
+        "paraffin_per_accepted_panel": paraffin_per_accepted_panel.quantize(
+            TWO_DECIMAL_PLACES
+        ),
+        "urea_per_accepted_panel": urea_per_accepted_panel.quantize(TWO_DECIMAL_PLACES),
+        "chemical_dose_per_accepted_panel": chemical_dose_per_accepted_panel.quantize(
+            TWO_DECIMAL_PLACES
+        ),
+    }

@@ -80,6 +80,14 @@ class ProcessParameterAssessmentRead(BaseModel):
     status: str
 
 
+class MaterialEfficiencyRead(BaseModel):
+    chemical_total_dosed: Decimal = Field(max_digits=6, decimal_places=2)
+    resin_per_accepted_panel: Decimal = Field(max_digits=6, decimal_places=2)
+    paraffin_per_accepted_panel: Decimal = Field(max_digits=6, decimal_places=2)
+    urea_per_accepted_panel: Decimal = Field(max_digits=6, decimal_places=2)
+    chemical_dose_per_accepted_panel: Decimal = Field(max_digits=6, decimal_places=2)
+
+
 class ProductionSheetOperationalAssessmentRead(BaseModel):
     production_sheet_id: int
     production_ref: int
@@ -91,6 +99,7 @@ class ProductionSheetOperationalAssessmentRead(BaseModel):
     downtime_status: str
     sustainability_status: str
     process_parameters: dict[str, ProcessParameterAssessmentRead]
+    material_efficiency: MaterialEfficiencyRead
     overall_status: str
     flags: list[str]
     main_issue: str | None

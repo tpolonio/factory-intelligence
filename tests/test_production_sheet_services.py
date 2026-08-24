@@ -3,6 +3,7 @@ import os
 os.environ.setdefault("DATABASE_URL", "postgresql://test:test@localhost/test")
 
 from datetime import datetime, timezone
+from decimal import Decimal
 
 import pytest
 from fastapi import HTTPException
@@ -826,6 +827,95 @@ def test_get_production_sheet_operational_assessment_press_temperature_at_target
         assert (
             operational_assessment["process_parameters"]["forming_line_speed"]["status"]
             == "within_target"
+        )
+
+    finally:
+        db.close()
+
+
+def test_get_production_sheet_operational_assessment_material_efficiency_all_panels_accepted():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        new_production_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(
+                panels_produced=100,
+                panels_rejected=0,
+                resin_dosed=10,
+                urea_dosed=3,
+                paraffin_dosed=2,
+            ),
+            db,
+        )
+
+        operational_assessment = (
+            production_sheets.get_production_sheet_operational_assessment(
+                new_production_sheet.id, db
+            )
+        )
+
+        assert (
+            operational_assessment["material_efficiency"]["chemical_total_dosed"]
+            == new_production_sheet.resin_dosed
+            + new_production_sheet.paraffin_dosed
+            + new_production_sheet.urea_dosed
+        )
+
+        assert operational_assessment["material_efficiency"][
+            "resin_per_accepted_panel"
+        ] == pytest.approx(Decimal(10 / 100))
+        assert operational_assessment["material_efficiency"][
+            "paraffin_per_accepted_panel"
+        ] == pytest.approx(Decimal(2 / 100))
+        assert operational_assessment["material_efficiency"][
+            "urea_per_accepted_panel"
+        ] == pytest.approx(Decimal(3 / 100))
+
+    finally:
+        db.close()
+
+
+def test_get_production_sheet_operational_assessment_material_efficiency_all_panels_rejected():
+    db = TestingSessionLocal()
+
+    try:
+        create_services(db)
+        new_production_sheet = production_sheets.create_production_sheet(
+            build_production_sheet_payload(
+                panels_produced=100,
+                panels_rejected=100,
+                resin_dosed=10,
+                urea_dosed=3,
+                paraffin_dosed=2,
+            ),
+            db,
+        )
+
+        operational_assessment = (
+            production_sheets.get_production_sheet_operational_assessment(
+                new_production_sheet.id, db
+            )
+        )
+
+        assert (
+            operational_assessment["material_efficiency"]["chemical_total_dosed"]
+            == new_production_sheet.resin_dosed
+            + new_production_sheet.paraffin_dosed
+            + new_production_sheet.urea_dosed
+        )
+
+        assert (
+            operational_assessment["material_efficiency"]["resin_per_accepted_panel"]
+            == 0
+        )
+        assert (
+            operational_assessment["material_efficiency"]["paraffin_per_accepted_panel"]
+            == 0
+        )
+        assert (
+            operational_assessment["material_efficiency"]["urea_per_accepted_panel"]
+            == 0
         )
 
     finally:

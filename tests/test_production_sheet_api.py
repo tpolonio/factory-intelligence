@@ -234,6 +234,7 @@ async def test_get_production_sheet_assessment_through_api_returns_ok():
                 body["process_parameters"]["press_temperature"]["status"]
                 == "within_target"
             )
+            assert body["material_efficiency"]["resin_per_accepted_panel"] == "0.10"
             assert body["flags"] == [
                 "high_rejection_rate",
                 "downtime_above_target",

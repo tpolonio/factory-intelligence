@@ -36,6 +36,8 @@ Implemented:
 - Production sheet listing with operational filters, pagination, and deterministic ordering (newest first)
 - Production sheet detail retrieval
 - Per-run operational assessment: quality, downtime, and sustainability statuses with flags and main-issue prioritization
+- Process parameter assessment: press temperature, pressure, factor, and forming line speed classified against target windows
+- Material efficiency metrics: chemical consumption per accepted panel
 - Service-layer business logic for implemented production workflows
 - Pytest coverage for reference-data services and production sheet workflows
 

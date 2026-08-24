@@ -382,6 +382,13 @@ Operational assessment response:
       "status": "within_target"
     }
   },
+  "material_efficiency": {
+    "chemical_total_dosed": "16.50",
+    "resin_per_accepted_panel": "0.10",
+    "paraffin_per_accepted_panel": "0.03",
+    "urea_per_accepted_panel": "0.00",
+    "chemical_dose_per_accepted_panel": "0.14"
+  },
   "overall_status": "warning",
   "flags": [
     "high_rejection_rate",
@@ -391,6 +398,11 @@ Operational assessment response:
   "main_issue": "high_rejection_rate"
 }
 ```
+
+Material efficiency metrics report chemical consumption per **accepted** panel — rejected panels
+raise the chemical cost of each sellable unit. Values are rounded to two decimal places. When a
+run has no accepted panels, the per-panel metrics are reported as `"0.00"` while the total still
+reflects the chemicals actually used.
 
 Process parameters are classified against target windows as
 `within_target`, `below_target`, or `above_target`. Window boundaries are inclusive: a value
