@@ -1,0 +1,28 @@
+name: Factory Intelligence CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  test:
+    name: lint and tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: check repo
+        uses: actions/checkout@v7
+      - name: setup python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+          cache: 'pip'
+      - name: install dependencies
+        run: pip install -r requirements.txt
+      - name: run ruff check
+        run: ruff check app tests
+      - name: run ruff format
+        run: ruff format --check app tests
+      - name: run pytest
+        run: pytest
