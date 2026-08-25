@@ -1,5 +1,7 @@
 # Factory Intelligence
 
+![CI](https://github.com/TPolonio/factory-intelligence/actions/workflows/ci.yml/badge.svg)
+
 Factory Intelligence is an analytics platform for manufacturing environments.
 It is designed to help quality teams and production managers turn CSV exports from lab equipment
 and production systems into useful operational insights such as statistical quality analysis,
