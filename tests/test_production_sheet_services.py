@@ -409,7 +409,7 @@ def test_list_production_sheets_can_filter_by_date_range():
         db.close()
 
 
-def test_get_production_sheet_operational_assessment_returns_good_status():
+def test_get_production_sheet_operational_assessment_returns_ok():
     db = TestingSessionLocal()
 
     try:
@@ -431,14 +431,20 @@ def test_get_production_sheet_operational_assessment_returns_good_status():
             )
         )
 
-        assert operational_assessment["accepted_panels"] == 98
-        assert operational_assessment["rejection_rate"] == 2.0
-        assert operational_assessment["net_production_time"] == 95
-        assert operational_assessment["downtime_rate"] == 5.0
-        assert operational_assessment["quality_status"] == "good"
-        assert operational_assessment["downtime_status"] == "good"
-        assert operational_assessment["sustainability_status"] == "target_met"
+        print(f"operational_assessment: {operational_assessment}")
+
+        assert operational_assessment["production_metrics"]["accepted_panels"] == 98
+        assert operational_assessment["quality"]["rejection_rate"] == 2.0
+        assert operational_assessment["production_metrics"]["net_production_time"] == 95
+        assert operational_assessment["downtime"]["downtime_rate"] == 5.0
+        assert operational_assessment["quality"]["status"] == "good"
+        assert operational_assessment["downtime"]["status"] == "good"
+        assert operational_assessment["sustainability"]["status"] == "target_met"
         assert operational_assessment["overall_status"] == "good"
+        assert (
+            operational_assessment["sustainability"]["recycled_material_percentage"]
+            > 10
+        )
         assert operational_assessment["flags"] == []
         assert operational_assessment["main_issue"] is None
 
@@ -468,13 +474,15 @@ def test_get_production_sheet_operational_assessment_returns_critical_downtime()
             )
         )
 
-        assert operational_assessment["accepted_panels"] == 98
-        assert operational_assessment["rejection_rate"] == 2.0
-        assert operational_assessment["net_production_time"] == 70.0
-        assert operational_assessment["downtime_rate"] == 30.0
-        assert operational_assessment["quality_status"] == "good"
-        assert operational_assessment["downtime_status"] == "critical"
-        assert operational_assessment["sustainability_status"] == "target_met"
+        assert operational_assessment["production_metrics"]["accepted_panels"] == 98
+        assert operational_assessment["quality"]["rejection_rate"] == 2.0
+        assert (
+            operational_assessment["production_metrics"]["net_production_time"] == 70.0
+        )
+        assert operational_assessment["downtime"]["downtime_rate"] == 30.0
+        assert operational_assessment["quality"]["status"] == "good"
+        assert operational_assessment["downtime"]["status"] == "critical"
+        assert operational_assessment["sustainability"]["status"] == "target_met"
         assert operational_assessment["overall_status"] == "critical"
         assert operational_assessment["flags"] == ["critical_downtime"]
         assert operational_assessment["main_issue"] == "critical_downtime"
@@ -504,9 +512,9 @@ def test_get_production_sheet_operational_assessment_returns_critical_rejection(
             )
         )
 
-        assert operational_assessment["accepted_panels"] == 60
-        assert operational_assessment["rejection_rate"] == 40
-        assert operational_assessment["quality_status"] == "critical"
+        assert operational_assessment["production_metrics"]["accepted_panels"] == 60
+        assert operational_assessment["quality"]["rejection_rate"] == 40
+        assert operational_assessment["quality"]["status"] == "critical"
         assert operational_assessment["flags"] == [
             "critical_rejection_rate",
         ]
@@ -538,11 +546,13 @@ def test_get_production_sheet_operational_assessment_returns_critical_rejection_
             )
         )
 
-        assert operational_assessment["accepted_panels"] == 60
-        assert operational_assessment["rejection_rate"] == 40
-        assert operational_assessment["net_production_time"] == 100.5
-        assert operational_assessment["quality_status"] == "critical"
-        assert operational_assessment["downtime_status"] == "critical"
+        assert operational_assessment["production_metrics"]["accepted_panels"] == 60
+        assert operational_assessment["quality"]["rejection_rate"] == 40
+        assert (
+            operational_assessment["production_metrics"]["net_production_time"] == 100.5
+        )
+        assert operational_assessment["quality"]["status"] == "critical"
+        assert operational_assessment["downtime"]["status"] == "critical"
         assert operational_assessment["flags"] == [
             "critical_rejection_rate",
             "critical_downtime",
@@ -576,13 +586,15 @@ def test_get_production_sheet_operational_assessment_returns_warning_rejection_a
             )
         )
 
-        assert operational_assessment["accepted_panels"] == 96
-        assert operational_assessment["rejection_rate"] == 4.0
-        assert operational_assessment["net_production_time"] == 95.0
-        assert operational_assessment["downtime_rate"] == 5.0
-        assert operational_assessment["quality_status"] == "warning"
-        assert operational_assessment["downtime_status"] == "good"
-        assert operational_assessment["sustainability_status"] == "below_target"
+        assert operational_assessment["production_metrics"]["accepted_panels"] == 96
+        assert operational_assessment["quality"]["rejection_rate"] == 4.0
+        assert (
+            operational_assessment["production_metrics"]["net_production_time"] == 95.0
+        )
+        assert operational_assessment["downtime"]["downtime_rate"] == 5.0
+        assert operational_assessment["quality"]["status"] == "warning"
+        assert operational_assessment["downtime"]["status"] == "good"
+        assert operational_assessment["sustainability"]["status"] == "below_target"
         assert operational_assessment["overall_status"] == "warning"
         assert operational_assessment["flags"] == [
             "high_rejection_rate",

@@ -88,16 +88,33 @@ class MaterialEfficiencyRead(BaseModel):
     chemical_dose_per_accepted_panel: Decimal = Field(max_digits=6, decimal_places=2)
 
 
+class ProductionMetricsRead(BaseModel):
+    accepted_panels: int
+    net_production_time: float
+
+
+class QualityAssessmentRead(BaseModel):
+    rejection_rate: float
+    status: str
+
+
+class DowntimeAssessmentRead(BaseModel):
+    downtime_rate: float
+    status: str
+
+
+class SustainabilityAssessmentRead(BaseModel):
+    recycled_material_percentage: float
+    status: str
+
+
 class ProductionSheetOperationalAssessmentRead(BaseModel):
     production_sheet_id: int
     production_ref: int
-    accepted_panels: int
-    rejection_rate: float
-    net_production_time: float
-    downtime_rate: float
-    quality_status: str
-    downtime_status: str
-    sustainability_status: str
+    production_metrics: ProductionMetricsRead
+    quality: QualityAssessmentRead
+    downtime: DowntimeAssessmentRead
+    sustainability: SustainabilityAssessmentRead
     process_parameters: dict[str, ProcessParameterAssessmentRead]
     material_efficiency: MaterialEfficiencyRead
     overall_status: str

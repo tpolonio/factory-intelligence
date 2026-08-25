@@ -176,6 +176,8 @@ def get_production_sheet_operational_assessment(
         production_sheet.total_downtime / production_sheet.production_duration * 100
     )
 
+    recycled_material_percentage = production_sheet.percentage_recycled_material
+
     quality_status = classify_quality_status(rejection_rate)
     downtime_status = classify_downtime_status(downtime_rate)
     sustainability_status = classify_sustainability_status(
@@ -207,13 +209,22 @@ def get_production_sheet_operational_assessment(
     return {
         "production_sheet_id": production_sheet.id,
         "production_ref": production_sheet.production_ref,
-        "accepted_panels": accepted_panels,
-        "rejection_rate": rejection_rate,
-        "net_production_time": net_production_time,
-        "downtime_rate": downtime_rate,
-        "quality_status": quality_status,
-        "downtime_status": downtime_status,
-        "sustainability_status": sustainability_status,
+        "production_metrics": {
+            "accepted_panels": accepted_panels,
+            "net_production_time": net_production_time,
+        },
+        "quality": {
+            "rejection_rate": rejection_rate,
+            "status": quality_status,
+        },
+        "downtime": {
+            "downtime_rate": downtime_rate,
+            "status": downtime_status,
+        },
+        "sustainability": {
+            "recycled_material_percentage": recycled_material_percentage,
+            "status": sustainability_status,
+        },
         "process_parameters": process_parameters,
         "material_efficiency": material_efficiency,
         "overall_status": overall_status,

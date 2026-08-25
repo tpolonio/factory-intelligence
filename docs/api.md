@@ -357,13 +357,22 @@ Operational assessment response:
 {
   "production_sheet_id": 1,
   "production_ref": 20260805,
-  "accepted_panels": 115,
-  "rejection_rate": 6.504065040650407,
-  "net_production_time": 130.1,
-  "downtime_rate": 13.554817275747509,
-  "quality_status": "warning",
-  "downtime_status": "warning",
-  "sustainability_status": "below_target",
+  "production_metrics": {
+    "accepted_panels": 115,
+    "net_production_time": 130.1
+  },
+  "quality": {
+    "rejection_rate": 6.504065040650407,
+    "status": "warning"
+  },
+  "downtime": {
+    "downtime_rate": 13.554817275747509,
+    "status": "warning"
+  },
+  "sustainability": {
+    "recycled_material_percentage": 12.0,
+    "status": "below_target"
+  },
   "process_parameters": {
     "forming_line_speed": {
       "value": 10.5,

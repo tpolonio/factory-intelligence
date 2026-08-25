@@ -228,8 +228,8 @@ async def test_get_production_sheet_assessment_through_api_returns_ok():
             body = response.json()
 
             assert response.status_code == 200, response.json()
-            assert body["accepted_panels"] == 115
-            assert body["quality_status"] == "warning"
+            assert body["production_metrics"]["accepted_panels"] == 115
+            assert body["quality"]["status"] == "warning"
             assert (
                 body["process_parameters"]["press_temperature"]["status"]
                 == "within_target"
