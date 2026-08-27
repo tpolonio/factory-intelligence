@@ -659,7 +659,7 @@ def test_get_production_sheet_operational_assessment_quality_status_warning(
 ):
     create_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
-        build_production_sheet_payload(press_temperature=170),
+        build_production_sheet_payload(panels_rejected=4),
         db_session,
     )
 
@@ -669,23 +669,79 @@ def test_get_production_sheet_operational_assessment_quality_status_warning(
         )
     )
 
-    assert (
-        operational_assessment["process_parameters"]["press_temperature"]["status"]
-        == "within_target"
+    assert operational_assessment["quality"]["status"] == "warning"
+
+
+def test_get_production_sheet_operational_assessment_quality_status_critical(
+    db_session,
+):
+    create_services(db_session)
+    new_production_sheet = production_sheets.create_production_sheet(
+        build_production_sheet_payload(panels_rejected=8),
+        db_session,
     )
 
-    assert (
-        operational_assessment["process_parameters"]["press_pressure"]["status"]
-        == "within_target"
+    operational_assessment = (
+        production_sheets.get_production_sheet_operational_assessment(
+            new_production_sheet.id, db_session
+        )
     )
-    assert (
-        operational_assessment["process_parameters"]["press_factor"]["status"]
-        == "within_target"
+
+    assert operational_assessment["quality"]["status"] == "critical"
+
+
+def test_get_production_sheet_operational_assessment_downtime_status_warning(
+    db_session,
+):
+    create_services(db_session)
+    new_production_sheet = production_sheets.create_production_sheet(
+        build_production_sheet_payload(production_duration=100, total_downtime=10.1),
+        db_session,
     )
-    assert (
-        operational_assessment["process_parameters"]["forming_line_speed"]["status"]
-        == "within_target"
+
+    operational_assessment = (
+        production_sheets.get_production_sheet_operational_assessment(
+            new_production_sheet.id, db_session
+        )
     )
+
+    assert operational_assessment["downtime"]["status"] == "warning"
+
+
+def test_get_production_sheet_operational_assessment_downtime_status_critical(
+    db_session,
+):
+    create_services(db_session)
+    new_production_sheet = production_sheets.create_production_sheet(
+        build_production_sheet_payload(production_duration=100, total_downtime=21),
+        db_session,
+    )
+
+    operational_assessment = (
+        production_sheets.get_production_sheet_operational_assessment(
+            new_production_sheet.id, db_session
+        )
+    )
+
+    assert operational_assessment["downtime"]["status"] == "critical"
+
+
+def test_get_production_sheet_operational_assessment_sustainability_target_met(
+    db_session,
+):
+    create_services(db_session)
+    new_production_sheet = production_sheets.create_production_sheet(
+        build_production_sheet_payload(percentage_recycled_material=20),
+        db_session,
+    )
+
+    operational_assessment = (
+        production_sheets.get_production_sheet_operational_assessment(
+            new_production_sheet.id, db_session
+        )
+    )
+
+    assert operational_assessment["sustainability"]["status"] == "target_met"
 
 
 def test_get_production_sheet_operational_assessment_material_efficiency_all_panels_accepted(
