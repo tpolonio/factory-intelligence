@@ -57,17 +57,15 @@ def test_create_production_sheet_with_valid_reference_ids(db_session):
     assert new_production_sheet.press_temperature == 180.0
     assert new_production_sheet.press_pressure == 150.0
     assert new_production_sheet.press_factor == 0.8
-    assert new_production_sheet.production_duration == 150.5
+    assert new_production_sheet.production_duration == 150.0
     assert new_production_sheet.total_downtime == 20.4
-    assert new_production_sheet.resin_dosed == 12
+    assert new_production_sheet.resin_dosed == 10
     assert new_production_sheet.paraffin_dosed == 4
-    assert new_production_sheet.urea_dosed == 0.5
-    assert new_production_sheet.percentage_recycled_material == 12
-    assert new_production_sheet.panels_produced == 123
-    assert new_production_sheet.panels_rejected == 8
-    assert new_production_sheet.rejection_rate == pytest.approx(
-        6.504065040650406, rel=1e-9
-    )
+    assert new_production_sheet.urea_dosed == 1
+    assert new_production_sheet.percentage_recycled_material == 10
+    assert new_production_sheet.panels_produced == 100
+    assert new_production_sheet.panels_rejected == 5
+    assert new_production_sheet.rejection_rate == 5.0
 
 
 def test_duplicate_production_ref_returns_conflict(db_session):
@@ -400,7 +398,7 @@ def test_get_production_sheet_operational_assessment_returns_critical_rejection_
 
     assert operational_assessment["production_metrics"]["accepted_panels"] == 60
     assert operational_assessment["quality"]["rejection_rate"] == 40
-    assert operational_assessment["production_metrics"]["net_production_time"] == 100.5
+    assert operational_assessment["production_metrics"]["net_production_time"] == 100
     assert operational_assessment["quality"]["status"] == "critical"
     assert operational_assessment["downtime"]["status"] == "critical"
     assert operational_assessment["flags"] == [
@@ -623,6 +621,40 @@ def test_get_production_sheet_operational_assessment_press_temperature_below_tar
 
 
 def test_get_production_sheet_operational_assessment_press_temperature_at_target_limit(
+    db_session,
+):
+    create_services(db_session)
+    new_production_sheet = production_sheets.create_production_sheet(
+        build_production_sheet_payload(press_temperature=170),
+        db_session,
+    )
+
+    operational_assessment = (
+        production_sheets.get_production_sheet_operational_assessment(
+            new_production_sheet.id, db_session
+        )
+    )
+
+    assert (
+        operational_assessment["process_parameters"]["press_temperature"]["status"]
+        == "within_target"
+    )
+
+    assert (
+        operational_assessment["process_parameters"]["press_pressure"]["status"]
+        == "within_target"
+    )
+    assert (
+        operational_assessment["process_parameters"]["press_factor"]["status"]
+        == "within_target"
+    )
+    assert (
+        operational_assessment["process_parameters"]["forming_line_speed"]["status"]
+        == "within_target"
+    )
+
+
+def test_get_production_sheet_operational_assessment_quality_status_warning(
     db_session,
 ):
     create_services(db_session)

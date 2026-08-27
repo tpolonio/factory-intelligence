@@ -19,14 +19,14 @@ def build_production_sheet_payload(**overrides):
         "press_temperature": 180.0,
         "press_pressure": 150.0,
         "press_factor": 0.8,
-        "production_duration": 150.5,
+        "production_duration": 150.0,
         "total_downtime": 20.4,
-        "resin_dosed": 12,
+        "resin_dosed": 10,
         "paraffin_dosed": 4,
-        "urea_dosed": 0.5,
-        "percentage_recycled_material": 12,
-        "panels_produced": 123,
-        "panels_rejected": 8,
+        "urea_dosed": 1,
+        "percentage_recycled_material": 10,
+        "panels_produced": 100,
+        "panels_rejected": 5,
     }
     data.update(overrides)
     return ProductionSheetCreate(**data)
