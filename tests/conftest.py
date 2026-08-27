@@ -57,3 +57,4 @@ async def client():
         transport=transport, base_url="http://testserver"
     ) as c:
         yield c
+    app.dependency_overrides.clear()
