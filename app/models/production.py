@@ -25,6 +25,7 @@ from app.models.base_models import PanelType
 
 if TYPE_CHECKING:
     from app.models.base_models import ProductionLine, ResinType, Shift
+    from app.models.lab import LabTest
 
 
 class ProductionSheet(Base):
@@ -132,6 +133,9 @@ class ProductionSheet(Base):
         "ProductionLine", back_populates="production_sheets"
     )
     shift: Mapped[Shift] = relationship("Shift", back_populates="production_sheets")
+    lab_tests: Mapped[list[LabTest]] = relationship(
+        "LabTest", back_populates="production_sheet"
+    )
 
     @hybrid_property
     def rejection_rate(self) -> float:

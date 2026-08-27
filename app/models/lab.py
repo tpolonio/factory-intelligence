@@ -20,6 +20,7 @@ from app.models.base_models import PanelType
 
 if TYPE_CHECKING:
     from app.models.base_models import ProductionLine, Shift
+    from app.models.production import ProductionSheet
 
 
 class LabTest(Base):
@@ -71,8 +72,12 @@ class LabTest(Base):
     panel_thickness: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
     batch_id: Mapped[int] = mapped_column()
     shift_id: Mapped[int] = mapped_column(ForeignKey("shifts.id"))
+    production_sheet_id: Mapped[int] = mapped_column(
+        ForeignKey("production_sheets.id", ondelete="RESTRICT"),
+        nullable=True,
+        index=True,
+    )
     panel_type: Mapped[PanelType] = mapped_column(Enum(PanelType))
-
     actual_thickness: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
     calculated_density: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
     moisture_content: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
@@ -96,3 +101,6 @@ class LabTest(Base):
         "ProductionLine", back_populates="lab_tests"
     )
     shift: Mapped[Shift] = relationship("Shift", back_populates="lab_tests")
+    production_sheet: Mapped[ProductionSheet | None] = relationship(
+        "ProductionSheet", back_populates="lab_tests"
+    )
