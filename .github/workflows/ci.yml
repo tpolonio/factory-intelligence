@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: check repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
       - name: setup python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
+          python-version: '3.12'
           cache: 'pip'
       - name: install dependencies
         run: pip install -r requirements.txt
