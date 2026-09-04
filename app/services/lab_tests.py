@@ -18,9 +18,6 @@ STATUS_WARNING = "warning"
 STATUS_CRITICAL = "critical"
 
 
-MAIN_ISSUE_PRIORITY = []
-
-
 def create_lab_test(lab_test_input: LabTestCreate, db: Session) -> LabTest:
 
     production_sheet = ensure_production_ref_exists(lab_test_input.production_ref, db)
@@ -92,9 +89,9 @@ def list_lab_tests(
     return db.scalars(statement).all()
 
 
-def get_lab_test(lab_ref_id: int, db: Session) -> LabTest:
+def get_lab_test(lab_test_id: int, db: Session) -> LabTest:
 
-    lab_test = db.get(LabTest, lab_ref_id)
+    lab_test = db.get(LabTest, lab_test_id)
     if not lab_test:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Lab test not found."
