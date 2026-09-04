@@ -8,8 +8,9 @@ and production systems into useful operational insights such as statistical qual
 OEE tracking, and shift-level reporting.
 
 The project is in active development. Production sheet workflows are implemented end to end —
-creation, filtered querying, detail lookup, and per-run operational assessment — while lab test
-endpoints, CSV ingestion, and reporting remain on the roadmap.
+creation, filtered querying, detail lookup, and per-run operational assessment. Lab test
+creation, filtered querying, and detail lookup are also implemented, while CSV ingestion and
+reporting remain on the roadmap.
 
 ---
 
@@ -24,7 +25,7 @@ Factory Intelligence aims to replace part of that workflow with a structured API
 ## Current Capabilities
 
 Factory Intelligence currently supports reference-data management for production lines, resin
-types, and shifts, plus complete production sheet workflows.
+types, and shifts, plus complete production sheet workflows and lab test creation/query workflows.
 
 Implemented:
 
@@ -40,13 +41,15 @@ Implemented:
 - Per-run operational assessment: quality, downtime, and sustainability statuses with flags and main-issue prioritization
 - Process parameter assessment: press temperature, pressure, factor, and forming line speed classified against target windows
 - Material efficiency metrics: chemical consumption per accepted panel
-- Service-layer business logic for implemented production workflows
-- Pytest coverage for reference-data services and production sheet workflows
+- Lab test creation with reference-record validation (production line, shift, and production sheet)
+- Lab test listing with operational filters, pagination, and deterministic ordering (newest first)
+- Lab test detail retrieval
+- Service-layer business logic for implemented production and lab workflows
+- Pytest coverage for reference-data services, production sheet workflows, and lab test workflows
 
 Not yet implemented:
 
-- Production sheet update and delete workflows
-- Lab test schemas and endpoints
+- Production sheet and lab test update and delete workflows
 - CSV ingestion and parsing workflows
 - Lab quality analysis endpoints
 - Production OEE and stoppage analysis endpoints

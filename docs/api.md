@@ -21,6 +21,12 @@ The production router is mounted under:
 /api/v1/production
 ```
 
+The lab router is mounted under:
+
+```text
+/api/v1/lab
+```
+
 ## Reference Data
 
 Reference data currently includes production lines, resin types, and shifts. Production sheets must
@@ -442,5 +448,124 @@ Common production sheet errors:
 ```text
 404 Not Found: referenced production line, shift, resin type, or production sheet id does not exist
 409 Conflict: production_ref already exists
+422 Unprocessable Entity: request, query, or path validation failed
+```
+
+### Lab Tests
+
+Lab tests capture quality measurements for a produced panel: density, moisture, internal bond,
+bending strength, elastic modulus, thickness swelling, water absorption, and formaldehyde
+metrics. A lab test requires an existing production line and shift, and it must reference an
+existing production sheet via `production_ref` — the sheet's `id` is stored as
+`production_sheet_id`.
+
+`calculated_density` and `elastic_modulus` are stored and validated as whole numbers (no decimal
+places); all other measurement fields carry two decimal places.
+
+Endpoints:
+
+```text
+POST /api/v1/lab/lab-tests
+GET  /api/v1/lab/lab-tests
+GET  /api/v1/lab/lab-tests/{lab_test_id}
+```
+
+Create request:
+
+```json
+{
+  "lab_ref": 500123,
+  "lab_test_date": "2026-08-05T14:00:00Z",
+  "production_line_id": 1,
+  "production_ref": 20260805,
+  "batch_id": 1,
+  "shift_id": 1,
+  "panel_type": "MDF",
+  "panel_thickness": "18.00",
+  "actual_thickness": "18.20",
+  "calculated_density": "650",
+  "moisture_content": "8.00",
+  "internal_bond": "0.50",
+  "bending_strength": "20.00",
+  "elastic_modulus": "2500",
+  "thickness_swelling": "10.00",
+  "water_absorption": "20.00",
+  "formaldehyde_emission": "0.10",
+  "formaldehyde_content": "5.00"
+}
+```
+
+Create response:
+
+```json
+{
+  "id": 1,
+  "lab_ref": 500123,
+  "lab_test_date": "2026-08-05T14:00:00Z",
+  "production_line_id": 1,
+  "production_sheet_id": 1,
+  "batch_id": 1,
+  "shift_id": 1,
+  "panel_type": "MDF",
+  "panel_thickness": "18.00",
+  "actual_thickness": "18.20",
+  "calculated_density": "650",
+  "moisture_content": "8.00",
+  "internal_bond": "0.50",
+  "bending_strength": "20.00",
+  "elastic_modulus": "2500",
+  "thickness_swelling": "10.00",
+  "water_absorption": "20.00",
+  "formaldehyde_emission": "0.10",
+  "formaldehyde_content": "5.00",
+  "created_at": "2026-08-05T14:03:11.201933Z",
+  "updated_at": "2026-08-05T14:03:11.201933Z"
+}
+```
+
+List query parameters:
+
+```text
+production_line_id: optional positive integer filter
+shift_id: optional positive integer filter
+batch_id: optional positive integer filter
+panel_type: optional panel type filter, for example MDF
+panel_thickness: optional exact thickness filter
+lab_test_date_from: optional inclusive datetime lower bound
+lab_test_date_to: optional inclusive datetime upper bound
+limit: default 20, minimum 1, maximum 100
+offset: default 0, minimum 0
+```
+
+Results are ordered by `lab_test_date` descending, with `id` descending as a tiebreaker, matching
+the production sheet listing's deterministic ordering.
+
+Example list request:
+
+```text
+GET /api/v1/lab/lab-tests?panel_type=MDF&limit=20&offset=0
+```
+
+Example detail request:
+
+```text
+GET /api/v1/lab/lab-tests/1
+```
+
+Validation notes:
+
+```text
+production_line_id: must reference an existing production line
+shift_id: must reference an existing shift
+production_ref: must reference an existing production sheet
+lab_ref: must be unique
+calculated_density, elastic_modulus: whole numbers only, no decimal places
+```
+
+Common lab test errors:
+
+```text
+404 Not Found: referenced production line, shift, production reference, or lab test id does not exist
+409 Conflict: lab_ref already exists
 422 Unprocessable Entity: request, query, or path validation failed
 ```
