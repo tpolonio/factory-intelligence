@@ -79,11 +79,11 @@ class LabTest(Base):
     )
     panel_type: Mapped[PanelType] = mapped_column(Enum(PanelType))
     actual_thickness: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
-    calculated_density: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
+    calculated_density: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=0))
     moisture_content: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
     internal_bond: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
     bending_strength: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
-    elastic_modulus: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
+    elastic_modulus: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=0))
     thickness_swelling: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
     water_absorption: Mapped[Decimal] = mapped_column(Numeric(precision=6, scale=2))
     formaldehyde_emission: Mapped[Decimal] = mapped_column(
