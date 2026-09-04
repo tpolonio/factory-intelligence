@@ -5,41 +5,19 @@ import pytest
 from fastapi import HTTPException
 
 from app.models.base_models import PanelType
-from app.schemas.base_models import ProductionLineCreate, ResinTypeCreate, ShiftCreate
-from app.services import production_lines, production_sheets, resin_types, shifts
-from tests.helpers import build_production_sheet_payload
-
-
-def create_production_line(db):
-    return production_lines.create_production_line(
-        ProductionLineCreate(name="MDF Line"),
-        db,
-    )
-
-
-def create_resin_type(db):
-    return resin_types.create_resin_type(ResinTypeCreate(name="UF"), db)
-
-
-def create_shift(db):
-    return shifts.create_shift(
-        ShiftCreate(
-            shift_letter="A",
-            press_operator="Joao Fernandes",
-            line_operator="Luis Costa",
-        ),
-        db,
-    )
-
-
-def create_services(db):
-    create_production_line(db)
-    create_resin_type(db)
-    create_shift(db)
+from app.schemas.base_models import ProductionLineCreate
+from app.services import production_lines, production_sheets
+from tests.helpers import (
+    build_production_sheet_payload,
+    create_production_line,
+    create_production_sheet_services,
+    create_resin_type,
+    create_shift,
+)
 
 
 def test_create_production_sheet_with_valid_reference_ids(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(),
         db_session,
@@ -69,7 +47,7 @@ def test_create_production_sheet_with_valid_reference_ids(db_session):
 
 
 def test_duplicate_production_ref_returns_conflict(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     production_sheets.create_production_sheet(
         build_production_sheet_payload(), db_session
     )
@@ -119,7 +97,7 @@ def test_missing_resin_type_returns_not_found(db_session):
 
 
 def test_list_production_sheets_returns_created_sheets(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
 
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(),
@@ -134,7 +112,7 @@ def test_list_production_sheets_returns_created_sheets(db_session):
 
 
 def test_list_production_sheets_can_filter_by_panel_type(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
 
     new_production_sheet_1 = production_sheets.create_production_sheet(
         build_production_sheet_payload(),
@@ -156,7 +134,7 @@ def test_list_production_sheets_can_filter_by_panel_type(db_session):
 
 
 def test_list_production_sheets_can_filter_by_production_ref(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
 
     new_production_sheet_1 = production_sheets.create_production_sheet(
         build_production_sheet_payload(),
@@ -178,7 +156,7 @@ def test_list_production_sheets_can_filter_by_production_ref(db_session):
 
 
 def test_list_production_sheets_can_filter_by_production_line_id(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
 
     production_lines.create_production_line(
         ProductionLineCreate(name="OSB Line"),
@@ -206,7 +184,7 @@ def test_list_production_sheets_can_filter_by_production_line_id(db_session):
 
 
 def test_list_production_sheets_applies_limit(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     production_sheets.create_production_sheet(
         build_production_sheet_payload(),
         db_session,
@@ -224,7 +202,7 @@ def test_list_production_sheets_applies_limit(db_session):
 
 
 def test_get_production_sheet_returns_existing_sheet(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
 
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(),
@@ -241,7 +219,7 @@ def test_get_production_sheet_returns_existing_sheet(db_session):
 
 
 def test_missing_production_sheet_returns_not_found(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     production_sheets.create_production_sheet(
         build_production_sheet_payload(),
         db_session,
@@ -254,7 +232,7 @@ def test_missing_production_sheet_returns_not_found(db_session):
 
 
 def test_list_production_sheets_can_filter_by_date_range(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     sheet_1_date = datetime(2026, 8, 1, tzinfo=timezone.utc)
     sheet_2_date = datetime(2026, 8, 10, tzinfo=timezone.utc)
 
@@ -282,7 +260,7 @@ def test_list_production_sheets_can_filter_by_date_range(db_session):
 
 
 def test_get_production_sheet_operational_assessment_returns_ok(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(
             production_duration=100,
@@ -316,7 +294,7 @@ def test_get_production_sheet_operational_assessment_returns_ok(db_session):
 def test_get_production_sheet_operational_assessment_returns_critical_downtime(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(
             production_duration=100,
@@ -349,7 +327,7 @@ def test_get_production_sheet_operational_assessment_returns_critical_downtime(
 def test_get_production_sheet_operational_assessment_returns_critical_rejection(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(
             total_downtime=0,
@@ -379,7 +357,7 @@ def test_get_production_sheet_operational_assessment_returns_critical_rejection(
 def test_get_production_sheet_operational_assessment_returns_critical_rejection_and_downtime(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(
             total_downtime=50,
@@ -412,7 +390,7 @@ def test_get_production_sheet_operational_assessment_returns_critical_rejection_
 def test_get_production_sheet_operational_assessment_returns_warning_rejection_and_low_sustainability(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(
             production_duration=100,
@@ -458,7 +436,7 @@ def test_get_production_sheet_operational_assessment_missing_sheet_returns_not_f
 
 
 def test_list_production_sheets_orders_newest_production_date_first(db_session):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
 
     newest_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(
@@ -495,7 +473,7 @@ def test_list_production_sheets_orders_newest_production_date_first(db_session):
 def test_list_production_sheets_orders_newer_insertion_first_when_dates_match(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     same_production_date = datetime(2026, 8, 1, 12, 0, tzinfo=timezone.utc)
 
     first_sheet = production_sheets.create_production_sheet(
@@ -522,7 +500,7 @@ def test_list_production_sheets_orders_newer_insertion_first_when_dates_match(
 def test_get_production_sheet_operational_assessment_process_params_within_target(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(),
         db_session,
@@ -555,7 +533,7 @@ def test_get_production_sheet_operational_assessment_process_params_within_targe
 def test_get_production_sheet_operational_assessment_press_temperature_above_target(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(press_temperature=200),
         db_session,
@@ -589,7 +567,7 @@ def test_get_production_sheet_operational_assessment_press_temperature_above_tar
 def test_get_production_sheet_operational_assessment_press_temperature_below_target(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(press_temperature=100),
         db_session,
@@ -623,7 +601,7 @@ def test_get_production_sheet_operational_assessment_press_temperature_below_tar
 def test_get_production_sheet_operational_assessment_press_temperature_at_target_limit(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(press_temperature=170),
         db_session,
@@ -657,7 +635,7 @@ def test_get_production_sheet_operational_assessment_press_temperature_at_target
 def test_get_production_sheet_operational_assessment_quality_status_warning(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(panels_rejected=4),
         db_session,
@@ -675,7 +653,7 @@ def test_get_production_sheet_operational_assessment_quality_status_warning(
 def test_get_production_sheet_operational_assessment_quality_status_critical(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(panels_rejected=8),
         db_session,
@@ -693,7 +671,7 @@ def test_get_production_sheet_operational_assessment_quality_status_critical(
 def test_get_production_sheet_operational_assessment_downtime_status_warning(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(production_duration=100, total_downtime=10.1),
         db_session,
@@ -711,7 +689,7 @@ def test_get_production_sheet_operational_assessment_downtime_status_warning(
 def test_get_production_sheet_operational_assessment_downtime_status_critical(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(production_duration=100, total_downtime=21),
         db_session,
@@ -729,7 +707,7 @@ def test_get_production_sheet_operational_assessment_downtime_status_critical(
 def test_get_production_sheet_operational_assessment_sustainability_target_met(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(percentage_recycled_material=20),
         db_session,
@@ -747,7 +725,7 @@ def test_get_production_sheet_operational_assessment_sustainability_target_met(
 def test_get_production_sheet_operational_assessment_material_efficiency_all_panels_accepted(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(
             panels_produced=100,
@@ -786,7 +764,7 @@ def test_get_production_sheet_operational_assessment_material_efficiency_all_pan
 def test_get_production_sheet_operational_assessment_material_efficiency_all_panels_rejected(
     db_session,
 ):
-    create_services(db_session)
+    create_production_sheet_services(db_session)
     new_production_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(
             panels_produced=100,
