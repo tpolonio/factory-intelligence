@@ -1,6 +1,6 @@
 import os
 
-os.environ.setdefault("DATABASE_URL", "postgresql://test:test@localhost/test")
+os.environ.setdefault("DATABASE_URL", "postgresql+psycopg2://test:test@localhost/test")
 
 import httpx2
 import pytest
