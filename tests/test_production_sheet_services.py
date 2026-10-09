@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
@@ -233,11 +233,11 @@ def test_missing_production_sheet_returns_not_found(db_session):
 
 def test_list_production_sheets_can_filter_by_date_range(db_session):
     create_production_sheet_services(db_session)
-    sheet_1_date = datetime(2026, 8, 1, tzinfo=timezone.utc)
-    sheet_2_date = datetime(2026, 8, 10, tzinfo=timezone.utc)
+    sheet_1_date = datetime(2026, 8, 1, tzinfo=UTC)
+    sheet_2_date = datetime(2026, 8, 10, tzinfo=UTC)
 
-    date_from = datetime(2026, 8, 1, 0, 0, tzinfo=timezone.utc)
-    date_to = datetime(2026, 8, 5, 23, 59, tzinfo=timezone.utc)
+    date_from = datetime(2026, 8, 1, 0, 0, tzinfo=UTC)
+    date_to = datetime(2026, 8, 5, 23, 59, tzinfo=UTC)
 
     new_production_sheet_1 = production_sheets.create_production_sheet(
         build_production_sheet_payload(production_date=sheet_1_date, production_ref=1),
@@ -440,21 +440,21 @@ def test_list_production_sheets_orders_newest_production_date_first(db_session):
 
     newest_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(
-            production_date=datetime(2026, 8, 10, tzinfo=timezone.utc),
+            production_date=datetime(2026, 8, 10, tzinfo=UTC),
             production_ref=1,
         ),
         db_session,
     )
     oldest_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(
-            production_date=datetime(2026, 8, 1, tzinfo=timezone.utc),
+            production_date=datetime(2026, 8, 1, tzinfo=UTC),
             production_ref=2,
         ),
         db_session,
     )
     middle_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(
-            production_date=datetime(2026, 8, 5, tzinfo=timezone.utc),
+            production_date=datetime(2026, 8, 5, tzinfo=UTC),
             production_ref=3,
         ),
         db_session,
@@ -474,7 +474,7 @@ def test_list_production_sheets_orders_newer_insertion_first_when_dates_match(
     db_session,
 ):
     create_production_sheet_services(db_session)
-    same_production_date = datetime(2026, 8, 1, 12, 0, tzinfo=timezone.utc)
+    same_production_date = datetime(2026, 8, 1, 12, 0, tzinfo=UTC)
 
     first_sheet = production_sheets.create_production_sheet(
         build_production_sheet_payload(

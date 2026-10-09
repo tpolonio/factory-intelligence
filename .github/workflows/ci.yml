@@ -21,8 +21,8 @@ jobs:
       - name: install dependencies
         run: pip install -r requirements.txt
       - name: run ruff check
-        run: ruff check app tests
+        run: ruff check app tests alembic
       - name: run ruff format
-        run: ruff format --check app tests
+        run: ruff format --check app tests alembic
       - name: run pytest
         run: pytest

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.schemas.base_models import ProductionLineCreate, ResinTypeCreate, ShiftCreate
 from app.schemas.lab import LabTestCreate
@@ -13,7 +13,7 @@ def build_production_sheet_payload(**overrides):
         "shift_id": 1,
         "resin_type_id": 1,
         "batch_id": 1,
-        "production_date": datetime.now(timezone.utc),
+        "production_date": datetime.now(UTC),
         "panel_type": "MDF",
         "panel_length": 4880,
         "panel_width": 1200,
@@ -38,7 +38,7 @@ def build_production_sheet_payload(**overrides):
 def build_lab_test_payload(**overrides):
     data = {
         "lab_ref": 1,
-        "lab_test_date": datetime.now(timezone.utc),
+        "lab_test_date": datetime.now(UTC),
         "production_ref": 1,
         "production_line_id": 1,
         "batch_id": 1,

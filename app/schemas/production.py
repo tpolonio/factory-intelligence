@@ -1,8 +1,8 @@
 from datetime import datetime
 from decimal import Decimal
+from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from typing_extensions import Self
 
 from app.models.base_models import PanelType
 

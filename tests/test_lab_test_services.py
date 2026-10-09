@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
@@ -170,11 +170,11 @@ def test_missing_lab_test_returns_not_found(db_session):
 
 def test_list_lab_tests_can_filter_by_date_range(db_session):
     create_lab_test_services(db_session)
-    sheet_1_date = datetime(2026, 8, 1, tzinfo=timezone.utc)
-    sheet_2_date = datetime(2026, 8, 10, tzinfo=timezone.utc)
+    sheet_1_date = datetime(2026, 8, 1, tzinfo=UTC)
+    sheet_2_date = datetime(2026, 8, 10, tzinfo=UTC)
 
-    date_from = datetime(2026, 8, 1, 0, 0, tzinfo=timezone.utc)
-    date_to = datetime(2026, 8, 5, 23, 59, tzinfo=timezone.utc)
+    date_from = datetime(2026, 8, 1, 0, 0, tzinfo=UTC)
+    date_to = datetime(2026, 8, 5, 23, 59, tzinfo=UTC)
 
     new_lab_test_1 = lab_tests.create_lab_test(
         build_lab_test_payload(lab_test_date=sheet_1_date, lab_ref=1),
@@ -327,21 +327,21 @@ def test_list_lab_tests_orders_newest_lab_test_date_first(db_session):
 
     newest_lab_test = lab_tests.create_lab_test(
         build_lab_test_payload(
-            lab_test_date=datetime(2026, 8, 10, tzinfo=timezone.utc),
+            lab_test_date=datetime(2026, 8, 10, tzinfo=UTC),
             lab_ref=1,
         ),
         db_session,
     )
     oldest_lab_test = lab_tests.create_lab_test(
         build_lab_test_payload(
-            lab_test_date=datetime(2026, 8, 1, tzinfo=timezone.utc),
+            lab_test_date=datetime(2026, 8, 1, tzinfo=UTC),
             lab_ref=2,
         ),
         db_session,
     )
     middle_lab_test = lab_tests.create_lab_test(
         build_lab_test_payload(
-            lab_test_date=datetime(2026, 8, 5, tzinfo=timezone.utc),
+            lab_test_date=datetime(2026, 8, 5, tzinfo=UTC),
             lab_ref=3,
         ),
         db_session,
@@ -359,7 +359,7 @@ def test_list_lab_tests_orders_newest_lab_test_date_first(db_session):
 
 def test_list_lab_tests_orders_newer_insertion_first_when_dates_match(db_session):
     create_lab_test_services(db_session)
-    same_lab_test_date = datetime(2026, 8, 1, 12, 0, tzinfo=timezone.utc)
+    same_lab_test_date = datetime(2026, 8, 1, 12, 0, tzinfo=UTC)
 
     first_lab_test = lab_tests.create_lab_test(
         build_lab_test_payload(
