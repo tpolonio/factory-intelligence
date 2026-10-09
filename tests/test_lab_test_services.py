@@ -5,8 +5,8 @@ import pytest
 from fastapi import HTTPException
 
 from app.models.base_models import PanelType
-from app.schemas.base_models import ProductionLineCreate
-from app.services import lab_tests, production_lines
+from app.schemas.base_models import ProductionLineCreate, ShiftCreate
+from app.services import lab_tests, production_lines, shifts
 from tests.helpers import (
     build_lab_test_payload,
     create_lab_test_services,
@@ -194,3 +194,189 @@ def test_list_lab_tests_can_filter_by_date_range(db_session):
     assert len(lab_tests_list) == 1
     assert lab_tests_list[0].id == new_lab_test_1.id
     assert lab_tests_list[0].id != new_lab_test_2.id
+
+
+def test_list_lab_tests_can_filter_by_batch_id(db_session):
+    create_lab_test_services(db_session)
+
+    new_lab_test_1 = lab_tests.create_lab_test(
+        build_lab_test_payload(),
+        db_session,
+    )
+
+    new_lab_test_2 = lab_tests.create_lab_test(
+        build_lab_test_payload(lab_ref=2, batch_id=2),
+        db_session,
+    )
+
+    lab_tests_list = lab_tests.list_lab_tests(
+        batch_id=1,
+        db=db_session,
+    )
+    assert len(lab_tests_list) == 1
+    assert new_lab_test_1.batch_id == 1
+    assert new_lab_test_2.batch_id == 2
+    assert lab_tests_list[0].batch_id == 1
+
+
+def test_list_lab_tests_can_filter_by_shift_id(db_session):
+    create_lab_test_services(db_session)
+
+    second_shift = shifts.create_shift(
+        ShiftCreate(
+            shift_letter="B",
+            press_operator="Rui Almeida",
+            line_operator="Nuno Santos",
+        ),
+        db_session,
+    )
+
+    new_lab_test_1 = lab_tests.create_lab_test(
+        build_lab_test_payload(),
+        db_session,
+    )
+
+    new_lab_test_2 = lab_tests.create_lab_test(
+        build_lab_test_payload(lab_ref=2, shift_id=second_shift.id),
+        db_session,
+    )
+
+    lab_tests_list = lab_tests.list_lab_tests(
+        shift_id=second_shift.id,
+        db=db_session,
+    )
+    assert len(lab_tests_list) == 1
+    assert new_lab_test_1.shift_id == 1
+    assert new_lab_test_2.shift_id == second_shift.id
+    assert lab_tests_list[0].shift_id == second_shift.id
+
+
+def test_list_lab_tests_can_filter_by_panel_thickness(db_session):
+    create_lab_test_services(db_session)
+
+    new_lab_test_1 = lab_tests.create_lab_test(
+        build_lab_test_payload(),
+        db_session,
+    )
+
+    new_lab_test_2 = lab_tests.create_lab_test(
+        build_lab_test_payload(lab_ref=2, panel_thickness=Decimal("25.00")),
+        db_session,
+    )
+
+    lab_tests_list = lab_tests.list_lab_tests(
+        panel_thickness=Decimal("18.00"),
+        db=db_session,
+    )
+    assert len(lab_tests_list) == 1
+    assert new_lab_test_1.panel_thickness == Decimal("18.00")
+    assert new_lab_test_2.panel_thickness == Decimal("25.00")
+    assert lab_tests_list[0].panel_thickness == Decimal("18.00")
+
+
+def test_list_lab_tests_applies_offset(db_session):
+    create_lab_test_services(db_session)
+    lab_tests.create_lab_test(
+        build_lab_test_payload(),
+        db_session,
+    )
+
+    lab_tests.create_lab_test(
+        build_lab_test_payload(lab_ref=2),
+        db_session,
+    )
+
+    lab_tests_list = lab_tests.list_lab_tests(offset=1, db=db_session)
+    assert len(lab_tests_list) == 1
+
+
+def test_list_lab_tests_can_filter_by_line_and_panel_type(db_session):
+    create_lab_test_services(db_session)
+
+    production_lines.create_production_line(
+        ProductionLineCreate(name="OSB Line"),
+        db_session,
+    )
+
+    new_lab_test_1 = lab_tests.create_lab_test(
+        build_lab_test_payload(),
+        db_session,
+    )
+
+    lab_tests.create_lab_test(
+        build_lab_test_payload(lab_ref=2, production_line_id=2),
+        db_session,
+    )
+
+    lab_tests.create_lab_test(
+        build_lab_test_payload(lab_ref=3, panel_type=PanelType.OSB),
+        db_session,
+    )
+
+    lab_tests_list = lab_tests.list_lab_tests(
+        production_line_id=1,
+        panel_type=PanelType.MDF,
+        db=db_session,
+    )
+    assert len(lab_tests_list) == 1
+    assert lab_tests_list[0].id == new_lab_test_1.id
+
+
+def test_list_lab_tests_orders_newest_lab_test_date_first(db_session):
+    create_lab_test_services(db_session)
+
+    newest_lab_test = lab_tests.create_lab_test(
+        build_lab_test_payload(
+            lab_test_date=datetime(2026, 8, 10, tzinfo=timezone.utc),
+            lab_ref=1,
+        ),
+        db_session,
+    )
+    oldest_lab_test = lab_tests.create_lab_test(
+        build_lab_test_payload(
+            lab_test_date=datetime(2026, 8, 1, tzinfo=timezone.utc),
+            lab_ref=2,
+        ),
+        db_session,
+    )
+    middle_lab_test = lab_tests.create_lab_test(
+        build_lab_test_payload(
+            lab_test_date=datetime(2026, 8, 5, tzinfo=timezone.utc),
+            lab_ref=3,
+        ),
+        db_session,
+    )
+
+    lab_tests_list = lab_tests.list_lab_tests(db=db_session)
+
+    ordered_ids = [lab_test.id for lab_test in lab_tests_list]
+    assert ordered_ids == [
+        newest_lab_test.id,
+        middle_lab_test.id,
+        oldest_lab_test.id,
+    ]
+
+
+def test_list_lab_tests_orders_newer_insertion_first_when_dates_match(db_session):
+    create_lab_test_services(db_session)
+    same_lab_test_date = datetime(2026, 8, 1, 12, 0, tzinfo=timezone.utc)
+
+    first_lab_test = lab_tests.create_lab_test(
+        build_lab_test_payload(
+            lab_test_date=same_lab_test_date,
+            lab_ref=1,
+        ),
+        db_session,
+    )
+    second_lab_test = lab_tests.create_lab_test(
+        build_lab_test_payload(
+            lab_test_date=same_lab_test_date,
+            lab_ref=2,
+        ),
+        db_session,
+    )
+
+    lab_tests_list = lab_tests.list_lab_tests(db=db_session)
+
+    ordered_ids = [lab_test.id for lab_test in lab_tests_list]
+    assert ordered_ids == [second_lab_test.id, first_lab_test.id]
